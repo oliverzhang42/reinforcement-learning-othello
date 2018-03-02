@@ -5,23 +5,22 @@ import hashlib
 import logging
 import argparse
 
+# Open AI Gym 
+import gym
 
 """
 https://github.com/haroldsultan/MCTS/blob/master/mcts.py
-
 A quick Monte Carlo Tree Search implementation.  For more details on MCTS see See http://pubs.doc.ic.ac.uk/survey-mcts-methods/survey-mcts-methods.pdf
 The State is just a game where you have NUM_TURNS and at turn i you can make
 a choice from [-2,2,3,-3]*i and this to to an accumulated value.  The goal is for the accumulated value to be as close to 0 as possible.
 The game is not very interesting but it allows one to study MCTS which is.  Some features 
 of the example by design are that moves do not commute and early mistakes are more costly.  
 In particular there are two models of best child that one can use 
-
 Things to do:
 1. Implement tic_tac_toe_env into the ENV place
-2. Finish Next State function
+2. Finish Next State function (done?)
 3. Implement a policy
 4. Write up documentation for everything
-
 """
 
 #MCTS scalar.  Larger scalar will increase exploitation, smaller will increase exploration. 
@@ -48,7 +47,7 @@ class State():
 		# is the reward associated with the reward you get when
 		# moving in the state or moving out of the state???
 		# Turns out, it's cumulitave reward.
-		return #Env().load(newstate)
+		return gym.make('TicTacToe-v0').load(newstate)
 	def terminal(self):
 		return self.done
 	def reward(self):

@@ -76,3 +76,5 @@ class TicTacToeEnv(gym.Env):
         self.state = state
     def get_state(self,state):
         return self.state
+    def _seed(self):
+        return 10
