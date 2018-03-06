@@ -49,6 +49,12 @@ class TicTacToeEnv(gym.Env):
             or (board[2] == p and board[4] == p and board[6] == p)):
                 reward = p
                 done = True
+
+        # check draw
+        if(board[0] != 0 and board[1] != 0 and board[2] != 0 and board[3] != 0
+           board[4] != 0 and board[5] != 0 and board[6] != 0 and board[7] != 0
+           board[8] != 0 and not done):
+            done = True
                 
         return self.state, reward, done, {}
     def _reset(self):
@@ -62,6 +68,8 @@ class TicTacToeEnv(gym.Env):
         print("on move: " , self.state['on_move'])
         for i in range (9):
             print (self.state['board'][i], end=" ")
+            if(i % 3 == 2):
+                print("")
         print()
     def move_generator(self):
         moves = []
