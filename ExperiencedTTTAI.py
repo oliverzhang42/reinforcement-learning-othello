@@ -36,6 +36,17 @@ BATCH_SIZE = 64
 # Episodes before switching which model to train
 EPISODES_BEFORE_SWITCH = 200
 
+def rotate_90(array):
+    # Assume array is 3x3
+    # ccw rotation
+    order = [2, 5, 8, 1, 4, 7, 0, 3, 6]
+    new_array = []
+
+    for i in order:
+        new_array.append(array[i])
+
+    return new_array
+
 class TicTacToe:
     def __init__(self, learning_rate, display_img, debugging, path):
         self.display_img = display_img
@@ -53,7 +64,8 @@ class TicTacToe:
         self.create_model_1()
         self.create_model_0()
 
-        self.experience = []
+        self.experience_0 = []
+        self.experience_1 = []
 
 
     # This Function Creates a Keras Model with three sections of:
@@ -143,33 +155,69 @@ class TicTacToe:
             #print(value.index(max(value)))
             return value.index(max(value))
 
-    def train_model(self, state_array, win_value, model_num, verbose):
-        # This contains the final values of each state and action pair in the
-        # episode. The model uses this to predict the values more accurately.
+    def add_to_history(self, state_array, win_value, model_num):
         answers = []
+
+        if(model_num == 0):
+            history = self.experience_0
+        elif(model_num == 1):
+            history = self.experience_1
+        else:
+            raise Exception("Model_Num is not 0 or 1!!!")
 
         current_reward = win_value
      
         for i in range(len(state_array)):
-            answers = [current_reward] + answers
+            current_array = state_array[len(state_array) - i - 1]
+            
+            history.append([current_array,
+                                 current_reward])
+            current_array = rotate_90(current_array)
+            history.append([current_array,
+                                 current_reward])
+            current_array = rotate_90(current_array)
+            history.append([current_array,
+                                 current_reward])
+            current_array = rotate_90(current_array)
+            history.append([current_array,
+                                 current_reward])
             current_reward *= REWARD_DECAY
+
+        #print(history)
+
+    def wipe_history(self):
+        self.experience_0 = []
+        self.experience_1 = []
+
+        print("WIPE!")
 
         # Preprocessing the state array. We append the actions taken to every
         # state in the state array. This is how we get state-action pairs to
         # feed into the model.
 
-        inputs = np.array(state_array)
+    def train_model(self, model_num, verbose):
+        inputs = []
+        answers = []
 
-        if(False):#self.debugging):
-            print("Inputs of Model: Observations and the taken Action")
-            print(inputs)
-            print("")
-            print("Targets of Model: Rewards of each Observation-Action pair")
+        if(model_num == 0):
+            history = self.experience_0
+        elif(model_num == 1):
+            history = self.experience_1
+        else:
+            raise Exception("Model_Num is not 0 or 1!!!")
+          
+        for i in range(BATCH_SIZE):
+            lesson = random.choice(history)
+            inputs.append(lesson[0])
+            answers.append(lesson[1])
 
+        inputs = np.array(inputs)
+        answers = np.array(answers)
+        
         if(model_num == 1):
-            self.model_1.fit(x = inputs, y = np.array(answers), verbose = verbose)
+            self.model_1.fit(x = inputs, y = answers, verbose = verbose)
         elif(model_num == 0):
-            self.model_0.fit(x = inputs, y = np.array(answers), verbose = verbose)
+            self.model_0.fit(x = inputs, y = answers, verbose = verbose)
 
     # Saves the model's weights.
     def save(self, s, model_num):
@@ -234,8 +282,6 @@ class TicTacToe:
                     self.env._render()
                     time.sleep(1)
 
-                state_array[model_num].append(board)
-
                 # Chose a move and take it
                 move = self.policy(board, model_num)
 
@@ -251,16 +297,24 @@ class TicTacToe:
                 # Check if done. We're only training once we finish the entire
                 # episode. Here, the model which makes the last move has number
                 # model_num, and the reward it has is reward
-                     
+
+                state_array[model_num].append(board)
+                
                 if done:
                     if(reward == 0):
                         print("Draw")
+                        
                     print("Episode finished after {} timesteps".format(t+1)) 
+
+                    #print(board)
+
+
+                    self.add_to_history(state_array[model_num], reward, model_num)
+                    self.add_to_history(state_array[1-model_num],
+                                     -reward, 1-model_num)
                     
-                    self.train_model(state_array[model_num],
-                                     reward, model_num, 0)
-                    self.train_model(state_array[1-model_num],
-                                     -reward, 1-model_num, 0)
+                    self.train_model(0, 0)
+                    self.train_model(1, 0)
                     
                     break
 
@@ -274,14 +328,15 @@ class TicTacToe:
                           model_num)
                 self.save(self.path + "/TicTacToe_W%d%d" % (i_episode, 1-model_num),
                           1-model_num)
+                self.wipe_history()
 
 learning_rate = 0.003
 display_img = True
 debugging = True
-path = "/home/oliver/Desktop/TicTacToe3"
+path = "/home/oliver/Desktop/TicTacToe1"
 
 x = TicTacToe(learning_rate, display_img, debugging, path)
-x.load(path + "/TicTacToe_W15000", 0)
-x.load(path + "/TicTacToe_W15001", 1)
-#x.test(1)
-x.main()
+x.load(path + "/TicTacToe_W99000", 0)
+x.load(path + "/TicTacToe_W99001", 1)
+x.test(0)
+#x.main()
