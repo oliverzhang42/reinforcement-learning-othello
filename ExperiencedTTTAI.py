@@ -18,6 +18,8 @@ import numpy as np
 # After Every SAVE_FREQUENCY episodes, we save the weights of the model in path.
 SAVE_FREQUENCY = 100
 
+WIPE_FREQUENCY = 10
+
 # The number of total episodes to run.
 TOTAL_EPISODES = 10000
 
@@ -59,7 +61,11 @@ class TicTacToe:
 
         # Epsilon sometimes randomizing the player's actions. Helps with
         # exploration of more possibilities.
-        self.epsilon = 200000
+        
+        self.epsilon = 2
+
+        if(debugging):
+            self.epsilon = 2000000
 
         self.create_model_1()
         self.create_model_0()
@@ -74,38 +80,24 @@ class TicTacToe:
     # isn't limited in a 0-1 range.
     def create_model_1(self):
         self.model_1 = keras.models.Sequential()
-        self.model_1.add(BatchNormalization(input_shape = (INPUT_SIZE,)))
-        self.model_1.add(Dense(LAYER_SIZE))
-        self.model_1.add(Activation("relu"))
+        self.model_1.add(Dense(LAYER_SIZE, input_shape = (INPUT_SIZE,)))
+        self.model_1.add(Activation("tanh"))
 
-        self.model_1.add(BatchNormalization())
-        self.model_1.add(Dense(LAYER_SIZE)) 
-        self.model_1.add(Activation("relu"))
-
-        self.model_1.add(BatchNormalization())
-        self.model_1.add(Dense(LAYER_SIZE)) 
-        self.model_1.add(Activation("relu"))
-
-        self.model_1.add(BatchNormalization())
+        self.model_1.add(Dense(LAYER_SIZE, input_shape = (INPUT_SIZE,)))
+        self.model_1.add(Activation("tanh"))
+        
         self.model_1.add(Dense(1))
 
         self.model_1.compile(loss='mse', optimizer = Adam(learning_rate))
     
     def create_model_0(self):
         self.model_0 = keras.models.Sequential()
-        self.model_0.add(BatchNormalization(input_shape = (INPUT_SIZE,)))
-        self.model_0.add(Dense(LAYER_SIZE))
-        self.model_0.add(Activation("relu"))
+        self.model_0.add(Dense(LAYER_SIZE, input_shape = (INPUT_SIZE,)))
+        self.model_0.add(Activation("tanh"))
 
-        self.model_0.add(BatchNormalization())
-        self.model_0.add(Dense(LAYER_SIZE)) 
-        self.model_0.add(Activation("relu"))
-
-        self.model_0.add(BatchNormalization())
-        self.model_0.add(Dense(LAYER_SIZE)) 
-        self.model_0.add(Activation("relu"))
-
-        self.model_0.add(BatchNormalization())
+        self.model_0.add(Dense(LAYER_SIZE, input_shape = (INPUT_SIZE,)))
+        self.model_0.add(Activation("tanh"))
+        
         self.model_0.add(Dense(1))
 
         self.model_0.compile(loss='mse', optimizer = Adam(learning_rate))
@@ -122,6 +114,7 @@ class TicTacToe:
     # appended to its end. It will then output the predicted value of either
     # move.
     def policy(self, observation, model_number):
+        d = {0: -1, 1: 1}
         value = []
 
         possible_moves = self.env.move_generator()
@@ -134,7 +127,7 @@ class TicTacToe:
                 value.append(-1)
             else:
                 move = list(observation)
-                move[i] = 1
+                move[i] = d[model_number]
                 move = np.array([move])
                 if(model_number == 1):
                     value.append(self.model_1.predict(move)[0])
@@ -146,12 +139,14 @@ class TicTacToe:
         variation = random.random()
         
         if(variation < 1/self.epsilon):
-            #self.epsilon += 0.1
+            self.epsilon += 0.001
             #print(self.epsilon)
-            #print("HIIII")
+            if(self.debugging):
+                print("Random Move for player " + str(model_number))
             return random.choice(possible_moves)[1]
         else:
-            #print(value)
+            if(self.debugging):
+                print(np.array(value).tolist())
             #print(value.index(max(value)))
             return value.index(max(value))
 
@@ -183,6 +178,7 @@ class TicTacToe:
                                  current_reward])
             current_reward *= REWARD_DECAY
 
+        #print(model_num)
         #print(history)
 
     def wipe_history(self):
@@ -213,6 +209,10 @@ class TicTacToe:
 
         inputs = np.array(inputs)
         answers = np.array(answers)
+
+        #print(model_num)
+        #print(inputs)
+        #print(answers)
         
         if(model_num == 1):
             self.model_1.fit(x = inputs, y = answers, verbose = verbose)
@@ -252,15 +252,21 @@ class TicTacToe:
 
             board = list(observation['board'])
 
+            if(done):
+                print("End of Game")
+                break
+
             # Chose a move and take it
             move = self.policy(board, model_num)
 
             observation, reward, done, info = self.env.step([-1, move])
 
             if(done):
+                print("End of Game")
                 break
 
     def main(self, path_for_m0 = "", path_for_m1 = ""):
+        d = {0: -1, 1:1}
         if(len(path_for_m1) != 0):
             self.load(path_for_m1, 1)
 
@@ -277,10 +283,19 @@ class TicTacToe:
             # Model Number which starts
             model_num = random.choice([0,1])
 
+            self.env.state['on_move'] = d[model_num]
+
+            if(self.debugging):
+                print("Starting Model " + str(model_num))
+
             for t in range(200):
-                if(False):#self.display_img):
+                if(self.display_img):
+                    pass
+                    #self.env._render()
+                
+                if(self.debugging):
                     self.env._render()
-                    time.sleep(1)
+                    time.sleep(5)
 
                 # Chose a move and take it
                 move = self.policy(board, model_num)
@@ -309,17 +324,23 @@ class TicTacToe:
                     #print(board)
 
 
-                    self.add_to_history(state_array[model_num], reward, model_num)
-                    self.add_to_history(state_array[1-model_num],
-                                     -reward, 1-model_num)
-                    
-                    self.train_model(0, 0)
-                    self.train_model(1, 0)
+                    self.add_to_history(state_array[0], -reward, 0)
+                    self.add_to_history(state_array[1], reward, 1)
+
+                    if(self.debugging):
+                        self.train_model(0, 1)
+                        self.train_model(1, 1)
+                    else:
+                        self.train_model(0, 0)
+                        self.train_model(1, 0)
                     
                     break
 
                 # Switch
                 model_num = 1 - model_num
+
+            if(i_episode % WIPE_FREQUENCY == 0):
+                self.wipe_history()
 
             # After Every SAVE_FREQUENCY episodes, we save the weights of the
             # model in path.
@@ -328,15 +349,29 @@ class TicTacToe:
                           model_num)
                 self.save(self.path + "/TicTacToe_W%d%d" % (i_episode, 1-model_num),
                           1-model_num)
-                self.wipe_history()
+
+    def display(self):
+        print("Printing Model 0:")
+        for layer in self.model_0.layers:
+            print("New Layer")
+            print(layer.get_weights()) # list of numpy arrays
+        
+        print("Printing Model 1:")
+        for layer in self.model_1.layers:
+            print("New Layer")
+            print(layer.get_weights()) # list of numpy arrays
+        
 
 learning_rate = 0.003
 display_img = True
 debugging = True
+#path = "/Users/student36/Desktop/TicTacToe3"
 path = "/home/oliver/Desktop/TicTacToe1"
 
 x = TicTacToe(learning_rate, display_img, debugging, path)
 x.load(path + "/TicTacToe_W99000", 0)
 x.load(path + "/TicTacToe_W99001", 1)
+#x.display()
 x.test(0)
+
 #x.main()
