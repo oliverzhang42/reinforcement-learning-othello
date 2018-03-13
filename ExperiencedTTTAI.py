@@ -21,7 +21,7 @@ SAVE_FREQUENCY = 100
 WIPE_FREQUENCY = 10
 
 # The number of total episodes to run.
-TOTAL_EPISODES = 10000
+TOTAL_EPISODES = 20000
 
 # The size of each layer in the model.
 LAYER_SIZE = 30
@@ -85,6 +85,9 @@ class TicTacToe:
 
         self.model_1.add(Dense(LAYER_SIZE, input_shape = (INPUT_SIZE,)))
         self.model_1.add(Activation("tanh"))
+
+        self.model_1.add(Dense(LAYER_SIZE, input_shape = (INPUT_SIZE,)))
+        self.model_1.add(Activation("tanh"))
         
         self.model_1.add(Dense(1))
 
@@ -97,7 +100,10 @@ class TicTacToe:
 
         self.model_0.add(Dense(LAYER_SIZE, input_shape = (INPUT_SIZE,)))
         self.model_0.add(Activation("tanh"))
-        
+
+        self.model_0.add(Dense(LAYER_SIZE, input_shape = (INPUT_SIZE,)))
+        self.model_0.add(Activation("tanh"))
+
         self.model_0.add(Dense(1))
 
         self.model_0.compile(loss='mse', optimizer = Adam(learning_rate))
@@ -139,7 +145,7 @@ class TicTacToe:
         variation = random.random()
         
         if(variation < 1/self.epsilon):
-            self.epsilon += 0.001
+            self.epsilon += 0.0001
             #print(self.epsilon)
             if(self.debugging):
                 print("Random Move for player " + str(model_number))
@@ -364,13 +370,13 @@ class TicTacToe:
 
 learning_rate = 0.003
 display_img = True
-debugging = True
+debugging = False #True
 #path = "/Users/student36/Desktop/TicTacToe3"
-path = "/home/oliver/Desktop/TicTacToe1"
+path = "/home/oliver/Desktop/TicTacToe2"
 
 x = TicTacToe(learning_rate, display_img, debugging, path)
-x.load(path + "/TicTacToe_W99000", 0)
-x.load(path + "/TicTacToe_W99001", 1)
+x.load(path + "/TicTacToe_W199000", 0)
+x.load(path + "/TicTacToe_W199001", 1)
 #x.display()
 x.test(0)
 
