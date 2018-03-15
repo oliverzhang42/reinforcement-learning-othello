@@ -52,7 +52,7 @@ class reversiBoard():
 
         board = self.board
         
-        board[y][x] = player
+        board[x][y] = player
         for d in range(8): # 8 directions
             ctr = 0
             for i in range(n):
@@ -60,16 +60,16 @@ class reversiBoard():
                 dy = y + self.diry[d] * (i + 1)
                 if dx < 0 or dx > n - 1 or dy < 0 or dy > n - 1:
                     ctr = 0; break
-                elif board[dy][dx] == player:
+                elif board[dx][dy] == player:
                     break
-                elif board[dy][dx] == 0:
+                elif board[dx][dy] == 0:
                     ctr = 0; break
                 else:
                     ctr += 1
             for i in range(ctr):
                 dx = x + self.dirx[d] * (i + 1)
                 dy = y + self.diry[d] * (i + 1)
-                board[dy][dx] = player
+                board[dx][dy] = player
             totctr += ctr
         return (board, totctr)
 
@@ -77,7 +77,7 @@ class reversiBoard():
         n = self.n
         totctr = 0 # total number of opponent pieces taken
         
-        board[y][x] = player
+        board[x][y] = player
         for d in range(8): # 8 directions
             ctr = 0
             for i in range(n):
@@ -85,16 +85,16 @@ class reversiBoard():
                 dy = y + self.diry[d] * (i + 1)
                 if dx < 0 or dx > n - 1 or dy < 0 or dy > n - 1:
                     ctr = 0; break
-                elif board[dy][dx] == player:
+                elif board[dx][dy] == player:
                     break
-                elif board[dy][dx] == 0:
+                elif board[dx][dy] == 0:
                     ctr = 0; break
                 else:
                     ctr += 1
             for i in range(ctr):
                 dx = x + self.dirx[d] * (i + 1)
                 dy = y + self.diry[d] * (i + 1)
-                board[dy][dx] = player
+                board[dx][dy] = player
             totctr += ctr
         return (board, totctr)
 
@@ -105,7 +105,7 @@ class reversiBoard():
         
         if x < 0 or x > n - 1 or y < 0 or y > n - 1:
             return False
-        if board[y][x] != 0:
+        if board[x][y] != 0:
             return False
         (boardTemp, totctr) = self.TestMove(copy.deepcopy(board), x, y, player)
         if totctr == 0:
@@ -113,7 +113,7 @@ class reversiBoard():
         return True
 
     # Here, Player is assumed to be 1
-    def getMoves(self):
+    def move_generator(self):
         possibleMoves = []
         
         board = self.board
@@ -177,7 +177,7 @@ class reversiBoard():
         if(not self.ValidMove(x, y, 1)):
             print("Invalid Move!")
             done = True
-            reward = -1*self.to_play # Gives a -1 if player 1 fails and vice versa
+            reward = -1*self.to_play # Gives a 1 if player 1 wins and vice versa
             return [], reward, done, {}
         else:
             # Always make a move like its the first person playing
@@ -186,5 +186,4 @@ class reversiBoard():
             self.reverse()
             self.to_play *= -1
             return self.board, reward, done, {}
-            
-        
+
