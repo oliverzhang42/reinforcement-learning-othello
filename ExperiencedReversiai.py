@@ -80,33 +80,12 @@ class Reversi:
         if(debugging):
             self.epsilon = 2000000
 
-        self.create_model()
+        self.model = create_model()
 
         self.experience = []
 
 
-    # This Function Creates a Keras Model with three sections of:
-    # a Batch Norm Layer, a Dense layer, and an Activation.
-    # There a fourth section with no activation because the output
-    # isn't limited in a 0-1 range.
-    def create_model(self):
-        self.model = keras.models.Sequential()
 
-        self.model.add(Conv2D(64, (3,3), activation = 'relu', padding = 'same',
-                              input_shape = (1,8,8)))
-        self.model.add(BatchNormalization())
-
-        self.model.add(Conv2D(64, (3,3), activation = 'relu', padding = 'same'))
-        self.model.add(BatchNormalization())
-        self.model.add(Conv2D(128, (3,3), activation = 'relu', padding = 'same'))
-        self.model.add(BatchNormalization())
-        self.model.add(Conv2D(128, (3,3), activation = 'relu', padding = 'same'))
-        self.model.add(BatchNormalization())
-        self.model.add(Flatten())
-        self.model.add(Dense(256, activation = 'relu'))
-        self.model.add(Dense(1))
-
-        self.model.compile(Adam(learning_rate), "mse")
 
     # Policy is how the model picks an action for a given situation and weights.
     # This is not training.
@@ -170,20 +149,19 @@ class Reversi:
         for i in range(len(state_array)):
             current_array = state_array[len(state_array) - i - 1]
             
-            history.append([current_array,
+            history.append([[current_array],
                                  current_reward])
             current_array = rotate_90(current_array)
-            history.append([current_array,
+            history.append([[current_array],
                                  current_reward])
             current_array = rotate_90(current_array)
-            history.append([current_array,
+            history.append([[current_array],
                                  current_reward])
             current_array = rotate_90(current_array)
-            history.append([current_array,
+            history.append([[current_array],
                                  current_reward])
             current_reward *= REWARD_DECAY
 
-        #print(model_num)
         #print(history)
 
     def wipe_history(self):
@@ -222,6 +200,25 @@ class Reversi:
     def load(self, s):
         self.model.load_weights(s)
 
+    # Plays two ai, from s1 and s2
+    def play_two_ai(self, s1, s2):
+        model1 = create_model()
+        model2 = create_model()
+
+        model1.load_weights(s1)
+        model2.load_weights(s2)
+
+        observation = self.env.reset()
+        player = self.env.to_play
+
+        for i in range(200):
+            self.model = model1
+            move = self.policy(observation)
+            observation, reward, done, info = self.env.step(move)
+            player = self.env.to_play
+
+#######################################################################
+
     # Have not updated yet
     def test(self):
         observation = self.env.reset()
@@ -234,7 +231,7 @@ class Reversi:
             x = 3 * row + col
 
             observation, reward, done, info = self.env.step([1, x])
-            self.env._render()
+            self.env.render()
 
             board = list(observation['board'])
 
@@ -265,19 +262,19 @@ class Reversi:
             state_array = [[],[]]
 
             for t in range(200):
+                #print(t)
                 if(self.display_img):
                     pass
                     #self.env.render()
                 
                 if(self.debugging):
-                    self.env.render()
-                    #time.sleep(5)
+                    #self.env.render()
+                    time.sleep(5)
 
                 # Chose a move and take it
                 move = self.policy(board)
 
                 player = self.env.to_play
-
                 
                 observation, reward, done, info = self.env.step(move)
 
@@ -290,8 +287,9 @@ class Reversi:
                     print(observation)
                     print("")
 
-                state_array[d[self.env.to_play]].append(observation)
-                
+                if(not done):
+                    state_array[d[self.env.to_play]].append(observation)
+
                 # Check if done. We're only training once we finish the entire
                 # episode. Here, the model which makes the last move has number
                 # model_num, and the reward it has is reward
@@ -304,9 +302,10 @@ class Reversi:
 
                     #print(board)
                     if(self.debugging):
-                        print("State Array")
+                        print("Winner: " + str(reward))
+                        #print("State Array")
                         #print(state_array)
-                        print("")
+                        #print("")
 
                     if(len(state_array[0]) == 0):
                         pass
@@ -327,6 +326,9 @@ class Reversi:
             if(i_episode % WIPE_FREQUENCY == 0):
                 self.wipe_history()
 
+            if(i_episode > 30):
+                self.debugging = True 
+
             # After Every SAVE_FREQUENCY episodes, we save the weights of the
             # model in path.
             if(i_episode % SAVE_FREQUENCY == 0):	
@@ -334,17 +336,47 @@ class Reversi:
 
     def display(self):
         pass
+
+    # This Function Creates a Keras Model with three sections of:
+    # a Batch Norm Layer, a Dense layer, and an Activation.
+    # There a fourth section with no activation because the output
+    # isn't limited in a 0-1 range.
+    # This is a static function.
+
+def create_model():
+    model = keras.models.Sequential()
+
+    model.add(Conv2D(64, (3,3), activation = 'relu', padding = 'same',
+                          input_shape = (1,8,8)))
+    model.add(BatchNormalization())
+
+    model.add(Conv2D(64, (3,3), activation = 'relu', padding = 'same'))
+    model.add(BatchNormalization())
+    model.add(Conv2D(128, (3,3), activation = 'relu', padding = 'same'))
+    model.add(BatchNormalization())
+    model.add(Conv2D(128, (3,3), activation = 'relu', padding = 'same'))
+    model.add(BatchNormalization())
+    model.add(Flatten())
+    model.add(Dense(256, activation = 'relu'))
+    model.add(Dense(1))
+
+    model.compile(Adam(learning_rate), "mse")
+
+    return model
         
 
-learning_rate = 0.003
+learning_rate = 0.0003
 display_img = True
 debugging = False
-#path = "/Users/student36/Desktop"
-path = "/home/oliver/Desktop/"
+path = "/Users/student36/Desktop"
+#path = "/home/oliver/Desktop/"
 
 x = Reversi(learning_rate, display_img, debugging, path)
+#data = np.array([[[[0 for i in range(8)] for i in range(8)]]])
+#print(np.array(x.model.predict(data)))
 #x.load(path + "/TicTacToe_W199000.dms", 0)
 #x.load(path + "/TicTacToe_W199001.dms", 1)
 #x.display()
 #x.test(0)
 x.main()
+
