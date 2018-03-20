@@ -16,14 +16,14 @@
 # 5. 
 
 import keras
-from keras.layers import BatchNormalization, Dense, Activation, Conv2D
+from keras.layers import BatchNormalization, Dense, Activation, Conv2D, Flatten
 from keras.optimizers import Adam
 import random
 import h5py
 import time
 import numpy as np
 from reversi import reversiBoard 
-
+import copy
 
 # After Every SAVE_FREQUENCY episodes, we save the weights of the model in path.
 SAVE_FREQUENCY = 100
@@ -49,13 +49,16 @@ BATCH_SIZE = 64
 EPISODES_BEFORE_SWITCH = 200
 
 def rotate_90(array):
-    # Assume array is 3x3
+    # Array is a 8x8 array.
     # ccw rotation
-    order = [2, 5, 8, 1, 4, 7, 0, 3, 6]
+
     new_array = []
 
-    for i in order:
-        new_array.append(array[i])
+    for i in range(8):
+        row = []
+        for j in range(8):
+            row.append(array[7-j][i])
+        new_array.append(row)
 
     return new_array
 
@@ -88,18 +91,22 @@ class Reversi:
     # isn't limited in a 0-1 range.
     def create_model(self):
         self.model = keras.models.Sequential()
-        self.model.add(Dense(LAYER_SIZE, input_shape = (INPUT_SIZE,)))
-        self.model.add(Activation("tanh"))
 
-        self.model.add(Dense(LAYER_SIZE, input_shape = (INPUT_SIZE,)))
-        self.model.add(Activation("tanh"))
+        self.model.add(Conv2D(64, (3,3), activation = 'relu', padding = 'same',
+                              input_shape = (1,8,8)))
+        self.model.add(BatchNormalization())
 
-        self.model.add(Dense(LAYER_SIZE, input_shape = (INPUT_SIZE,)))
-        self.model.add(Activation("tanh"))
-
+        self.model.add(Conv2D(64, (3,3), activation = 'relu', padding = 'same'))
+        self.model.add(BatchNormalization())
+        self.model.add(Conv2D(128, (3,3), activation = 'relu', padding = 'same'))
+        self.model.add(BatchNormalization())
+        self.model.add(Conv2D(128, (3,3), activation = 'relu', padding = 'same'))
+        self.model.add(BatchNormalization())
+        self.model.add(Flatten())
+        self.model.add(Dense(256, activation = 'relu'))
         self.model.add(Dense(1))
 
-        self.model.compile(loss='mse', optimizer = Adam(learning_rate))
+        self.model.compile(Adam(learning_rate), "mse")
 
     # Policy is how the model picks an action for a given situation and weights.
     # This is not training.
@@ -123,16 +130,20 @@ class Reversi:
             # Passes
             return (-1, -1)
 
+        if(self.debugging):
+            print(possible_moves)
+        
         for i in range(BOARD_SIZE):
             for j in range(BOARD_SIZE):
-                if(observation[i][j] == 1 or observation[i][j] == -1):
-                    value.append(-1)
-                else:
-                    move = list(observation)
+                if((i,j) in possible_moves):
+                    move = copy.deepcopy(observation)
                     # We always assume that we're player 1.
-                    move[i] = 1
+                    move[i][j] = 1
                     move = np.array([move])
-                    value.append(self.model.predict(move)[0])
+                    move = np.array([move])
+                    value.append(self.model.predict(move)[0][0])
+                else:
+                    value.append(-1)
 
         variation = random.random()
         
@@ -240,15 +251,14 @@ class Reversi:
                 print("End of Game")
                 break
 
-    def main(self, weight_path):
+    def main(self, weight_path = ""):
         d = {1: 0, -1: 1}
         
         if(len(weight_path) != 0):
             self.load(weight_path)
 
         for i_episode in range(TOTAL_EPISODES):
-            observation = self.env.reset()
-            board = list(observation['board'])
+            board = self.env.reset()
 
             # First array corresponds to the states faced by the first player
             # Same with second
@@ -261,17 +271,26 @@ class Reversi:
                 
                 if(self.debugging):
                     self.env.render()
-                    time.sleep(5)
+                    #time.sleep(5)
 
                 # Chose a move and take it
                 move = self.policy(board)
 
-                state_array[d[self.env.to_play]].append(board)
+                player = self.env.to_play
 
-                # print(move)
-
+                
                 observation, reward, done, info = self.env.step(move)
-                board = list(observation['board'])
+
+                if(self.debugging):
+                    print("Move")
+                    print(move)
+                    print("")
+
+                    print("Observation")
+                    print(observation)
+                    print("")
+
+                state_array[d[self.env.to_play]].append(observation)
                 
                 # Check if done. We're only training once we finish the entire
                 # episode. Here, the model which makes the last move has number
@@ -284,17 +303,24 @@ class Reversi:
                     print("Episode finished after {} timesteps".format(t+1)) 
 
                     #print(board)
+                    if(self.debugging):
+                        print("State Array")
+                        #print(state_array)
+                        print("")
+
+                    if(len(state_array[0]) == 0):
+                        pass
 
 
                     self.add_to_history(state_array[0], reward)
                     self.add_to_history(state_array[1], -reward)
 
                     if(self.debugging):
-                        self.train_model(0, 1)
-                        self.train_model(1, 1)
+                        self.train_model(1)
+                        self.train_model(1)
                     else:
-                        self.train_model(0, 0)
-                        self.train_model(1, 0)
+                        self.train_model(0)
+                        self.train_model(0)
                     
                     break
 
@@ -304,7 +330,7 @@ class Reversi:
             # After Every SAVE_FREQUENCY episodes, we save the weights of the
             # model in path.
             if(i_episode % SAVE_FREQUENCY == 0):	
-                self.save(self.path + "/TicTacToe_W%d%d" % (i_episode))
+                self.save(self.path + "ReversiW%d" % (i_episode))
 
     def display(self):
         pass
@@ -312,14 +338,13 @@ class Reversi:
 
 learning_rate = 0.003
 display_img = True
-debugging = False #True
-path = "/Users/student36/Desktop/TicTacToe1"
-#path = "/home/oliver/Desktop/TicTacToe2"
+debugging = False
+#path = "/Users/student36/Desktop"
+path = "/home/oliver/Desktop/"
 
-x = TicTacToe(learning_rate, display_img, debugging, path)
-x.load(path + "/TicTacToe_W199000.dms", 0)
-x.load(path + "/TicTacToe_W199001.dms", 1)
+x = Reversi(learning_rate, display_img, debugging, path)
+#x.load(path + "/TicTacToe_W199000.dms", 0)
+#x.load(path + "/TicTacToe_W199001.dms", 1)
 #x.display()
-x.test(0)
-
-#x.main()
+#x.test(0)
+x.main()
