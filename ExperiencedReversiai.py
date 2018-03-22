@@ -326,9 +326,6 @@ class Reversi:
             if(i_episode % WIPE_FREQUENCY == 0):
                 self.wipe_history()
 
-            if(i_episode > 30):
-                self.debugging = True 
-
             # After Every SAVE_FREQUENCY episodes, we save the weights of the
             # model in path.
             if(i_episode % SAVE_FREQUENCY == 0):	
@@ -368,7 +365,7 @@ def create_model():
 learning_rate = 0.0003
 display_img = True
 debugging = False
-path = "/Users/student36/Desktop"
+path = "/Users/student36/Desktop/Reversi1/"
 #path = "/home/oliver/Desktop/"
 
 x = Reversi(learning_rate, display_img, debugging, path)
@@ -379,4 +376,3 @@ x = Reversi(learning_rate, display_img, debugging, path)
 #x.display()
 #x.test(0)
 x.main()
-
