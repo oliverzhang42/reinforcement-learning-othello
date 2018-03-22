@@ -1,20 +1,8 @@
-#Note: Comments are wrong right now
-# Things to do:
-# 1. Create the right type of model
-# 2. Update Policy (Draws)
-# 3. Find a way to have a "population" of reversi AI's?
-#    Actually, it seemed that AlphaZero had only one AI playing itself.
-# 4. Update all functions :D
-# 5. Turns out that I actually need a way to test my AI. Hmmmm
-# 6. Do I even need a history???
+# So I'm switching my structure and Dividing the Reversi Class into two classes:
+# ReversiPlayer will be a single AI.
+# ReversiController will be a framework for the AI to exist in.
 
-# Debugging:
-# 1. Run program for a while.
-# 2. Print out Value Function
-# 3. Print out Loss
-# 4. Test Behavior
-# 5. 
-
+# Importing Stuff
 import keras
 from keras.layers import BatchNormalization, Dense, Activation, Conv2D, Flatten
 from keras.optimizers import Adam
@@ -25,17 +13,21 @@ import numpy as np
 from reversi import reversiBoard 
 import copy
 
+# Global Variables
+
 # After Every SAVE_FREQUENCY episodes, we save the weights of the model in path.
 SAVE_FREQUENCY = 100
 
+# After Every WIPE_FREQUENCY episodes, we wipe the history of the two players.
 WIPE_FREQUENCY = 10
 
 # The number of total episodes to run.
 TOTAL_EPISODES = 20000
 
-# The size of each layer in the model.
+# The size of each layer in the model. Currently Unused
 LAYER_SIZE = 30
 
+# The size of the othello board. (BOARD_SIZE by BOARD_SIZE)
 BOARD_SIZE = 8
 
 # Here, REWARD_DECAY is how much we care about the delayed reward compared to
@@ -48,97 +40,33 @@ BATCH_SIZE = 64
 # Episodes before switching which model to train
 EPISODES_BEFORE_SWITCH = 200
 
-def rotate_90(array):
-    # Array is a 8x8 array.
-    # ccw rotation
-
-    new_array = []
-
-    for i in range(8):
-        row = []
-        for j in range(8):
-            row.append(array[7-j][i])
-        new_array.append(row)
-
-    return new_array
-
-class Reversi:
-    def __init__(self, learning_rate, display_img, debugging, path):
-        self.display_img = display_img
-        self.debugging = debugging
-        self.path = path
-
-        # self.env is the implementation of the CartPole game. Code:
-        # https://github.com/openai/gym/blob/master/gym/envs/classic_control/cartpole.py
-        self.env = reversiBoard(BOARD_SIZE)
-
-        # Epsilon sometimes randomizing the player's actions. Helps with
-        # exploration of more possibilities.
-        
-        self.epsilon = 2
-
-        if(debugging):
-            self.epsilon = 2000000
-
-        self.model = create_model()
-
+class ReversiPlayer:
+    def __init__(self, learning_rate, epsilon = 2, epsilon_increment = 0.001):
+        self.learning_rate = learning_rate
+        self.epsilon = epsilon
+        self.epsilon_increment = epsilon_increment
         self.experience = []
 
+        self.create_model()
 
+    def create_model(self):
+        self.model = keras.models.Sequential()
 
+        self.model.add(Conv2D(64, (3,3), activation = 'relu', padding = 'same',
+                              input_shape = (1,8,8)))
+        self.model.add(BatchNormalization())
 
-    # Policy is how the model picks an action for a given situation and weights.
-    # This is not training.
+        self.model.add(Conv2D(64, (3,3), activation = 'relu', padding = 'same'))
+        self.model.add(BatchNormalization())
+        self.model.add(Conv2D(128, (3,3), activation = 'relu', padding = 'same'))
+        self.model.add(BatchNormalization())
+        self.model.add(Conv2D(128, (3,3), activation = 'relu', padding = 'same'))
+        self.model.add(BatchNormalization())
+        self.model.add(Flatten())
+        self.model.add(Dense(256, activation = 'relu'))
+        self.model.add(Dense(1))
 
-    # We introduce a bit of variation to encourage the model to try different
-    # paths. This is called an epsilon greedy policy. Here's a good resource
-    # for it:
-    # https://jamesmccaffrey.wordpress.com/2017/11/30/the-epsilon-greedy-algorithm/
-
-    # The model inputs the observation with either [1, 0] or [0, 1]
-    # appended to its end. It will then output the predicted value of either
-    # move.
-    def policy(self, observation):
-        # Value is an array. The 0th element corresponds to (0,0), the 1st: (0,1)
-        # the 8th: (1,0), etc.
-        value = []
-
-        possible_moves = self.env.move_generator()
-
-        if(len(possible_moves) == 0):
-            # Passes
-            return (-1, -1)
-
-        if(self.debugging):
-            print(possible_moves)
-        
-        for i in range(BOARD_SIZE):
-            for j in range(BOARD_SIZE):
-                if((i,j) in possible_moves):
-                    move = copy.deepcopy(observation)
-                    # We always assume that we're player 1.
-                    move[i][j] = 1
-                    move = np.array([move])
-                    move = np.array([move])
-                    value.append(self.model.predict(move)[0][0])
-                else:
-                    value.append(-1)
-
-        variation = random.random()
-        
-        if(variation < 1/self.epsilon):
-            self.epsilon += 0.0001
-            #print(self.epsilon)
-            if(self.debugging):
-                print("Random Move for player " + str(self.env.to_play))
-            return random.choice(possible_moves)
-        else:
-            if(self.debugging):
-                print(np.array(value).tolist())
-            #print(value.index(max(value)))
-            index = value.index(max(value))
-            action = (index // 8,index % 8)
-            return action
+        self.model.compile(Adam(self.learning_rate), "mse")
 
     def add_to_history(self, state_array, reward):
         answers = []
@@ -169,10 +97,6 @@ class Reversi:
 
         print("WIPE!")
 
-        # Preprocessing the state array. We append the actions taken to every
-        # state in the state array. This is how we get state-action pairs to
-        # feed into the model.
-
     def train_model(self, verbose):
         inputs = []
         answers = []
@@ -200,176 +124,64 @@ class Reversi:
     def load(self, s):
         self.model.load_weights(s)
 
-    # Plays two ai, from s1 and s2
-    def play_two_ai(self, s1, s2):
-        model1 = create_model()
-        model2 = create_model()
+    def policy(self, observation):
+        # Value is an array. The 0th element corresponds to (0,0), the 1st: (0,1)
+        # the 8th: (1,0), etc.
+        value = []
 
-        model1.load_weights(s1)
-        model2.load_weights(s2)
+        possible_moves = self.env.move_generator()
 
-        observation = self.env.reset()
-        player = self.env.to_play
+        if(len(possible_moves) == 0):
+            # Passes
+            return (-1, -1)
 
-        for i in range(200):
-            self.model = model1
-            move = self.policy(observation)
-            observation, reward, done, info = self.env.step(move)
-            player = self.env.to_play
-
-    def test(self):
-        observation = self.env.reset()
+        if(self.debugging):
+            print(possible_moves)
         
-        for i in range(64):
-            self.env.render()
-            row = int(input("Which Row?"))
-            col = int(input("Which Col?"))
+        for i in range(BOARD_SIZE):
+            for j in range(BOARD_SIZE):
+                if((i,j) in possible_moves):
+                    move = copy.deepcopy(observation)
+                    # We always assume that we're player 1.
+                    move[i][j] = 1
+                    move = np.array([move])
+                    move = np.array([move])
+                    value.append(self.model.predict(move)[0][0])
+                else:
+                    value.append(-1)
 
-            action = (row, col)
-
-            observation, reward, done, info = self.env.step(action)
-            self.env.render()
-
-            board = copy.deepcopy(observation)
-
-            if(done):
-                print("End of Game")
-                break
-
-            # Chose a move and take it
-            move = self.policy(board)
-
-            observation, reward, done, info = self.env.step(move)
-
-            if(done):
-                print("End of Game")
-                break
-
-    def main(self, weight_path = ""):
-        d = {1: 0, -1: 1}
+        variation = random.random()
         
-        if(len(weight_path) != 0):
-            self.load(weight_path)
+        if(variation < 1/self.epsilon):
+            self.epsilon += self.epsilon_increment
+            #print(self.epsilon)
+            if(self.debugging):
+                print("Random Move for player " + str(self.env.to_play))
+            return random.choice(possible_moves)
+        else:
+            if(self.debugging):
+                print(np.array(value).tolist())
+            #print(value.index(max(value)))
+            index = value.index(max(value))
+            action = (index // 8,index % 8)
+            return action
 
-        for i_episode in range(TOTAL_EPISODES):
-            board = self.env.reset()
+class ReversiController:
+    def __init__(self, learning_rate, display_img, debugging, population_size,
+                 epsilon = 2, epsilon_increment = 0.001):
+        self.env = reversiBoard(BOARD_SIZE)
+        self.display_img = display_img
+        self.debugging = debugging
 
-            # First array corresponds to the states faced by the first player
-            # Same with second
-            state_array = [[],[]]
+        self.population = [ReversiPlayer(learning_rate, epsilon, epsilon_increment)
+                           for i in range(population_size)]
 
-            for t in range(200):
-                #print(t)
-                if(self.display_img):
-                    pass
-                    #self.env.render()
-                
-                if(self.debugging):
-                    #self.env.render()
-                    time.sleep(5)
+    def play_two_ai():
 
-                # Chose a move and take it
-                move = self.policy(board)
+    def test():
 
-                player = self.env.to_play
-                
-                observation, reward, done, info = self.env.step(move)
+    def main():
 
-                if(self.debugging):
-                    print("Move")
-                    print(move)
-                    print("")
+    def save():
 
-                    print("Observation")
-                    print(observation)
-                    print("")
-
-                if(not done):
-                    state_array[d[self.env.to_play]].append(observation)
-
-                # Check if done. We're only training once we finish the entire
-                # episode. Here, the model which makes the last move has number
-                # model_num, and the reward it has is reward
-
-                if done:
-                    if(reward == 0):
-                        print("Draw")
-                        
-                    print("Episode finished after {} timesteps".format(t+1)) 
-
-                    #print(board)
-                    if(self.debugging):
-                        print("Winner: " + str(reward))
-                        #print("State Array")
-                        #print(state_array)
-                        #print("")
-
-                    if(len(state_array[0]) == 0):
-                        pass
-
-
-                    self.add_to_history(state_array[0], reward)
-                    self.add_to_history(state_array[1], -reward)
-
-                    if(self.debugging):
-                        self.train_model(1)
-                        self.train_model(1)
-                    else:
-                        self.train_model(0)
-                        self.train_model(0)
-                    
-                    break
-
-            if(i_episode % WIPE_FREQUENCY == 0):
-                self.wipe_history()
-
-            # After Every SAVE_FREQUENCY episodes, we save the weights of the
-            # model in path.
-            if(i_episode % SAVE_FREQUENCY == 0):	
-                self.save(self.path + "ReversiW%d" % (i_episode))
-
-    def display(self):
-        pass
-
-    # This Function Creates a Keras Model with three sections of:
-    # a Batch Norm Layer, a Dense layer, and an Activation.
-    # There a fourth section with no activation because the output
-    # isn't limited in a 0-1 range.
-    # This is a static function.
-
-def create_model():
-    model = keras.models.Sequential()
-
-    model.add(Conv2D(64, (3,3), activation = 'relu', padding = 'same',
-                          input_shape = (1,8,8)))
-    model.add(BatchNormalization())
-
-    model.add(Conv2D(64, (3,3), activation = 'relu', padding = 'same'))
-    model.add(BatchNormalization())
-    model.add(Conv2D(128, (3,3), activation = 'relu', padding = 'same'))
-    model.add(BatchNormalization())
-    model.add(Conv2D(128, (3,3), activation = 'relu', padding = 'same'))
-    model.add(BatchNormalization())
-    model.add(Flatten())
-    model.add(Dense(256, activation = 'relu'))
-    model.add(Dense(1))
-
-    model.compile(Adam(learning_rate), "mse")
-
-    return model
-        
-
-learning_rate = 0.0003
-display_img = True
-debugging = False
-path = "/Users/student36/Desktop/Reversi1/"
-#path = "/home/oliver/Desktop/"
-
-x = Reversi(learning_rate, display_img, debugging, path)
-#data = np.array([[[[0 for i in range(8)] for i in range(8)]]])
-#print(np.array(x.model.predict(data)))
-#x.load(path + "/TicTacToe_W199000.dms", 0)
-#x.load(path + "/TicTacToe_W199001.dms", 1)
-#x.display()
-x.test()
-#x.main()
+    def load():
