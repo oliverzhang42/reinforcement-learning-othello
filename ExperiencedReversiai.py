@@ -98,7 +98,7 @@ class Reversi:
     # The model inputs the observation with either [1, 0] or [0, 1]
     # appended to its end. It will then output the predicted value of either
     # move.
-    def policy(self, observation):
+    def policy(observation):
         # Value is an array. The 0th element corresponds to (0,0), the 1st: (0,1)
         # the 8th: (1,0), etc.
         value = []
@@ -217,32 +217,29 @@ class Reversi:
             observation, reward, done, info = self.env.step(move)
             player = self.env.to_play
 
-#######################################################################
-
-    # Have not updated yet
     def test(self):
         observation = self.env.reset()
         
-        for i in range(9):
+        for i in range(64):
             self.env.render()
             row = int(input("Which Row?"))
             col = int(input("Which Col?"))
 
-            x = 3 * row + col
+            action = (row, col)
 
-            observation, reward, done, info = self.env.step([1, x])
+            observation, reward, done, info = self.env.step(action)
             self.env.render()
 
-            board = list(observation['board'])
+            board = copy.deepcopy(observation)
 
             if(done):
                 print("End of Game")
                 break
 
             # Chose a move and take it
-            move = self.policy(board, model_num)
+            move = self.policy(board)
 
-            observation, reward, done, info = self.env.step([-1, move])
+            observation, reward, done, info = self.env.step(move)
 
             if(done):
                 print("End of Game")
@@ -374,5 +371,5 @@ x = Reversi(learning_rate, display_img, debugging, path)
 #x.load(path + "/TicTacToe_W199000.dms", 0)
 #x.load(path + "/TicTacToe_W199001.dms", 1)
 #x.display()
-#x.test(0)
-x.main()
+x.test()
+#x.main()
