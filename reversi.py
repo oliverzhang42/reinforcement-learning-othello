@@ -18,6 +18,9 @@ class reversiBoard():
 
     def reset(self):
         n = self.n
+        self.pass_counter = 0
+        self.to_play = 1
+        self.board = [[0 for i in range(8)] for j in range(8)]
         board = self.board
         
         if n % 2 == 0: # if board size is even
@@ -166,7 +169,7 @@ class reversiBoard():
             self.to_play *= 1
             self.pass_counter += 1
             
-            if(self.pass_counter == 2):
+            if(self.pass_counter >= 2):
                 # Two passes in a row
                 done = True
                 reward = self.findWinner()
@@ -186,4 +189,3 @@ class reversiBoard():
             self.reverse()
             self.to_play *= -1
             return self.board, reward, done, {}
-
