@@ -173,9 +173,9 @@ class reversiBoard():
                 # Two passes in a row
                 done = True
                 reward = self.findWinner()
-                return self.board, reward, done, {}
+                return copy.deepcopy(self.board), reward, done, {}
             else:
-                return self.board, reward, done, {}
+                return copy.deepcopy(self.board), reward, done, {}
 
         if(not self.ValidMove(x, y, 1)):
             print("Invalid Move!")
@@ -188,4 +188,4 @@ class reversiBoard():
             self.MakeMove(x,y,1)
             self.reverse()
             self.to_play *= -1
-            return self.board, reward, done, {}
+            return copy.deepcopy(self.board), reward, done, {}

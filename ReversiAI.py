@@ -40,12 +40,28 @@ BATCH_SIZE = 64
 # Episodes before switching which model to train
 EPISODES_BEFORE_SWITCH = 200
 
+def rotate_90(array):
+    # Array is a 8x8 array.
+    # ccw rotation
+
+    new_array = []
+
+    for i in range(8):
+        row = []
+        for j in range(8):
+            row.append(array[7-j][i])
+        new_array.append(row)
+
+    return new_array
+
 class ReversiPlayer:
-    def __init__(self, learning_rate, epsilon = 2, epsilon_increment = 0.001):
+    def __init__(self, learning_rate = 0.0001, epsilon = 2,
+                 epsilon_increment = 0.0001, debugging = False):
         self.learning_rate = learning_rate
         self.epsilon = epsilon
         self.epsilon_increment = epsilon_increment
         self.experience = []
+        self.debugging = debugging
 
         self.create_model()
 
@@ -64,7 +80,7 @@ class ReversiPlayer:
         self.model.add(BatchNormalization())
         self.model.add(Flatten())
         self.model.add(Dense(256, activation = 'relu'))
-        self.model.add(Dense(1))
+        self.model.add(Dense(1, activation = 'tanh'))
 
         self.model.compile(Adam(self.learning_rate), "mse")
 
@@ -124,12 +140,12 @@ class ReversiPlayer:
     def load(self, s):
         self.model.load_weights(s)
 
-    def policy(self, observation):
+    def policy(self, observation, env):
         # Value is an array. The 0th element corresponds to (0,0), the 1st: (0,1)
         # the 8th: (1,0), etc.
         value = []
 
-        possible_moves = self.env.move_generator()
+        possible_moves = env.move_generator()
 
         if(len(possible_moves) == 0):
             # Passes
@@ -154,34 +170,122 @@ class ReversiPlayer:
         
         if(variation < 1/self.epsilon):
             self.epsilon += self.epsilon_increment
-            #print(self.epsilon)
             if(self.debugging):
-                print("Random Move for player " + str(self.env.to_play))
+                print("Random Move for player " + str(env.to_play))
             return random.choice(possible_moves)
         else:
             if(self.debugging):
                 print(np.array(value).tolist())
-            #print(value.index(max(value)))
             index = value.index(max(value))
             action = (index // 8,index % 8)
             return action
 
 class ReversiController:
-    def __init__(self, learning_rate, display_img, debugging, population_size,
-                 epsilon = 2, epsilon_increment = 0.001):
+    def __init__(self, path, display_img, debugging, population_size,
+                 learning_rate = 0.001, epsilon = 2, epsilon_increment = 0.001):
         self.env = reversiBoard(BOARD_SIZE)
         self.display_img = display_img
         self.debugging = debugging
+        self.path = path
 
-        self.population = [ReversiPlayer(learning_rate, epsilon, epsilon_increment)
+        self.population = [ReversiPlayer(learning_rate, epsilon,
+                                         epsilon_increment, debugging)
                            for i in range(population_size)]
 
-    def play_two_ai():
+    def play_two_ai(self, index1, index2):
+        player = [self.population[index1], self.population[index2]]
 
+        d = {1: 0, -1: 1}
+
+        observation = self.env.reset()
+
+        # First array corresponds to the states faced by the first player
+        # Same with second
+        state_array = [[],[]]
+
+        for t in range(200):
+            if(self.display_img):
+                self.env.render()
+            
+            if(self.debugging):
+                self.env.render()
+                time.sleep(5)
+
+            # Chose a move and take it
+            move = player[t % 2].policy(observation, self.env)
+            
+            observation, reward, done, info = self.env.step(move)
+
+            if(self.debugging):
+                print("Move")
+                print(move)
+                print("")
+
+                print("Observation")
+                print(observation)
+                print("")
+            
+            if(not done):
+                state_array[d[self.env.to_play]].append(observation)
+
+            # Check if done. We're only training once we finish the entire
+            # episode. Here, the model which makes the last move has number
+            # model_num, and the reward it has is reward
+
+            if done:
+                if(reward == 0):
+                    print("Draw")
+                    
+                print("Episode finished after {} timesteps".format(t+1)) 
+
+                if(self.debugging):
+                    print("Winner: " + str(reward))
+
+                if(len(state_array[0]) == 0):
+                    pass
+
+                player[0].add_to_history(state_array[0], reward)
+                player[1].add_to_history(state_array[1], -reward)
+
+                break
+        
     def test():
+        pass
 
-    def main():
+    def main(self, total_episodes):
+        #Number of training episodes
+        for i in range(total_episodes):
+            #One Round Robin Tournament
+            for j in range(len(self.population)):
+                for k in range(len(self.population)):
+                    self.play_two_ai(j,k)
 
-    def save():
+            #Everyone Trains
+            for j in range(len(self.population)):
+                self.population[j].train_model(self.debugging)
 
-    def load():
+            if(i % SAVE_FREQUENCY == 0):
+                print(i)
+                self.save(i)
+
+            if(i % WIPE_FREQUENCY == 0):
+                for j in range(len(self.population)):
+                    self.population[j].wipe_history()
+        
+    def save(self, episode_number):
+        for j in range(len(self.population)):
+            self.population[j].save(self.path + "Reversi_%d_%d" %
+                                    (j, episode_number))
+
+    def load(self, episode_number):
+        for j in range(len(self.population)):
+            self.population[j].load(self.path + "Reversi_%d_%d" %
+                                    (j, episode_number))
+
+
+#path = "/Users/student36/Desktop/Reversi1/"
+path = "/home/oliver/Desktop/Reversi1/"
+
+x = ReversiController(path, False, False, 1)
+x.load(100)
+x.main(TOTAL_EPISODES)
