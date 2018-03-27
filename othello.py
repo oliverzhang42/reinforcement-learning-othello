@@ -29,12 +29,12 @@ root = Tk()
 screen = Canvas(root, width=500, height=600, background="#222",highlightthickness=0)
 screen.pack()
 
-#path = "/Users/student36/Desktop/Reversi1/"
-path = "/home/oliver/Desktop/ReversiTest/"
+path = "/Users/student36/Desktop/Reversi1/"
+#path = "/home/oliver/Desktop/ReversiTest/"
 
 #Importing My AI
 controller = ReversiController(path,  False, False, 1, epsilon = 100000)
-controller.load([19900])
+controller.load([0])
 
 def flip(array1):
     array = [[0 for i in range(8)] for i in range(8)]
@@ -254,8 +254,9 @@ class Board:
                 self.passed = True
             if(self.player == -1):
                 print('hi')
-            else:
-                self.update()
+                controller.env.reverse()
+            
+            self.update()
         else:
             self.passed = False
 
@@ -684,9 +685,9 @@ def clickHandle(event):
                 #If the click is inside the bounds and the move is valid, move to that location
                 if 0<=x<=7 and 0<=y<=7:
                     if valid(board.array,board.player,x,y):
-                        print("Our Move")
-                        print(str(x) + " " + str(y))
-                        print(controller.env.board)
+                        #print("Our Move")
+                        #print(str(x) + " " + str(y))
+                        #print(controller.env.board)
 
                         controller.env.step((y,x))
                         board.boardMove(x,y)
@@ -753,7 +754,7 @@ def runGame():
             screen.create_text(25+(x+1)*spacing+155*i,325,anchor="c",text="\u2605", font=("Consolas", 25),fill="#ffd700")
 
     screen.update()
-
+    
 def playGame():
     global board, running
     running = True
@@ -768,6 +769,8 @@ def playGame():
     board = Board()
     board.update()
 
+    #board.player = 1
+    #board.update()
 
 controller.env.reverse()
 runGame()
