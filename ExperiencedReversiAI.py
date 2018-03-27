@@ -98,10 +98,13 @@ class Reversi:
     # The model inputs the observation with either [1, 0] or [0, 1]
     # appended to its end. It will then output the predicted value of either
     # move.
-    def policy(observation):
+    def policy(self, observation = []):
         # Value is an array. The 0th element corresponds to (0,0), the 1st: (0,1)
         # the 8th: (1,0), etc.
         value = []
+
+        if(len(observation) != 0):
+            self.env.board = observation
 
         possible_moves = self.env.move_generator()
 

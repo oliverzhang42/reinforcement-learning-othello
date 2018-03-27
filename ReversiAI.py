@@ -22,7 +22,7 @@ SAVE_FREQUENCY = 100
 WIPE_FREQUENCY = 10
 
 # The number of total episodes to run.
-TOTAL_EPISODES = 20000
+TOTAL_EPISODES = 23000
 
 # The size of each layer in the model. Currently Unused
 LAYER_SIZE = 30
@@ -33,12 +33,35 @@ BOARD_SIZE = 8
 # Here, REWARD_DECAY is how much we care about the delayed reward compared to
 # the immediate reward. REWARD_DECAY = 1 means we care about all reward the
 # same, REWARD_DECAY = 0 means we don't care at all about the later rewards.
-REWARD_DECAY = 0.99
+REWARD_DECAY = 0.95
 
 BATCH_SIZE = 64
 
 # Episodes before switching which model to train
 EPISODES_BEFORE_SWITCH = 200
+
+def rotate_array(array):
+    for i in range(len(array)):
+        array[0] = rotate_90(array[0])
+        array[1] = rotate_90(array[1])
+        array[2] = rotate_90(array[2])
+
+    return array
+
+def process(array):
+    new_array = []
+    pieces = [0, 1, -1]
+    
+    for i in range(3):
+        board = []
+        for j in range(8):
+            row = []
+            for k in range(8):
+                row.append(int(array[j][k] == pieces[i]))
+            board.append(row)
+        new_array.append(board)
+
+    return new_array
 
 def rotate_90(array):
     # Array is a 8x8 array.
@@ -55,8 +78,8 @@ def rotate_90(array):
     return new_array
 
 class ReversiPlayer:
-    def __init__(self, learning_rate = 0.0001, epsilon = 2,
-                 epsilon_increment = 0.0001, debugging = False):
+    def __init__(self, learning_rate = 0.00005, epsilon = 2,
+                 epsilon_increment = 0.00005, debugging = False):
         self.learning_rate = learning_rate
         self.epsilon = epsilon
         self.epsilon_increment = epsilon_increment
@@ -69,7 +92,7 @@ class ReversiPlayer:
         self.model = keras.models.Sequential()
 
         self.model.add(Conv2D(64, (3,3), activation = 'relu', padding = 'same',
-                              input_shape = (1,8,8)))
+                              input_shape = (3,8,8)))
         self.model.add(BatchNormalization())
 
         self.model.add(Conv2D(64, (3,3), activation = 'relu', padding = 'same'))
@@ -89,20 +112,27 @@ class ReversiPlayer:
         history = self.experience
 
         current_reward = reward
-     
+
+        processed_array = []
+
+        for i in range(len(state_array)):
+            processed_array.append(process(state_array[i]))
+
+        state_array = processed_array
+        
         for i in range(len(state_array)):
             current_array = state_array[len(state_array) - i - 1]
             
-            history.append([[current_array],
+            history.append([current_array,
                                  current_reward])
-            current_array = rotate_90(current_array)
-            history.append([[current_array],
+            current_array = rotate_array(current_array)
+            history.append([current_array,
                                  current_reward])
-            current_array = rotate_90(current_array)
-            history.append([[current_array],
+            current_array = rotate_array(current_array)
+            history.append([current_array,
                                  current_reward])
-            current_array = rotate_90(current_array)
-            history.append([[current_array],
+            current_array = rotate_array(current_array)
+            history.append([current_array,
                                  current_reward])
             current_reward *= REWARD_DECAY
 
@@ -123,14 +153,12 @@ class ReversiPlayer:
             inputs.append(lesson[0])
             answers.append(lesson[1])
 
+        #print(model_num)
+
         inputs = np.array(inputs)
         answers = np.array(answers)
-
-        #print(model_num)
-        #print(inputs)
-        #print(answers)
         
-        self.model.fit(x = inputs, y = answers, verbose = verbose)
+        self.model.fit(x = inputs, y = answers, verbose = 1)
 
     # Saves the model's weights.
     def save(self, s):
@@ -160,7 +188,7 @@ class ReversiPlayer:
                     move = copy.deepcopy(observation)
                     # We always assume that we're player 1.
                     move[i][j] = 1
-                    move = np.array([move])
+                    move = process(move)
                     move = np.array([move])
                     value.append(self.model.predict(move)[0][0])
                 else:
@@ -182,11 +210,14 @@ class ReversiPlayer:
 
 class ReversiController:
     def __init__(self, path, display_img, debugging, population_size,
-                 learning_rate = 0.001, epsilon = 2, epsilon_increment = 0.001):
+                 learning_rate = 0.0001, epsilon = 2, epsilon_increment = 0.001):
         self.env = reversiBoard(BOARD_SIZE)
         self.display_img = display_img
         self.debugging = debugging
         self.path = path
+
+        if(debugging):
+            epsilon = 20000
 
         self.population = [ReversiPlayer(learning_rate, epsilon,
                                          epsilon_increment, debugging)
@@ -209,7 +240,7 @@ class ReversiController:
             
             if(self.debugging):
                 self.env.render()
-                time.sleep(5)
+                #time.sleep(5)
 
             # Chose a move and take it
             move = player[t % 2].policy(observation, self.env)
@@ -240,6 +271,8 @@ class ReversiController:
 
                 if(self.debugging):
                     print("Winner: " + str(reward))
+                #print("Winner: " + str(reward))
+
 
                 if(len(state_array[0]) == 0):
                     pass
@@ -249,10 +282,42 @@ class ReversiController:
 
                 break
         
-    def test():
-        pass
+    def test(self):
+        observation = self.env.reset()
+        
+        for i in range(64):
+            board = copy.deepcopy(observation)
+            
+            self.env.render()
+            
+            # Chose a move and take it
+            move = self.population[0].policy(board, self.env)
+
+            observation, reward, done, info = self.env.step(move)
+
+            print(done)
+
+            if(done):
+                print("End of Game")
+                break
+
+            self.env.render()
+
+            row = int(input("Which Row?"))
+            col = int(input("Which Col?"))
+
+            action = (row, col)
+
+            observation, reward, done, info = self.env.step(action)
+
+
+            if(done):
+                print("End of Game")
+                break
+        
 
     def main(self, total_episodes):
+        
         #Number of training episodes
         for i in range(total_episodes):
             #One Round Robin Tournament
@@ -266,26 +331,31 @@ class ReversiController:
 
             if(i % SAVE_FREQUENCY == 0):
                 print(i)
-                self.save(i)
+                self.save([i])
 
             if(i % WIPE_FREQUENCY == 0):
                 for j in range(len(self.population)):
                     self.population[j].wipe_history()
         
-    def save(self, episode_number):
+    def save(self, episode_numbers):
         for j in range(len(self.population)):
             self.population[j].save(self.path + "Reversi_%d_%d" %
-                                    (j, episode_number))
+                                    (j, episode_numbers[j]))
 
-    def load(self, episode_number):
+    def load(self, episode_numbers):
         for j in range(len(self.population)):
             self.population[j].load(self.path + "Reversi_%d_%d" %
-                                    (j, episode_number))
-
+                                    (j, episode_numbers[j]))
 
 #path = "/Users/student36/Desktop/Reversi1/"
-path = "/home/oliver/Desktop/Reversi1/"
+path = "/home/oliver/Desktop/Reversi3/"
 
 x = ReversiController(path, False, False, 1)
-x.load(100)
+
+#for i in range(99):
+#    x.load([(i + 1) * 100, 19900])
+#    x.play_two_ai(0,1)
+
+x.load([19900])
+#x.test()
 x.main(TOTAL_EPISODES)
