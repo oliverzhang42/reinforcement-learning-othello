@@ -347,15 +347,15 @@ class ReversiController:
             self.population[j].load(self.path + "Reversi_%d_%d" %
                                     (j, episode_numbers[j]))
 
-#path = "/Users/student36/Desktop/Reversi1/"
-path = "/home/oliver/Desktop/Reversi3/"
+path = "/Users/student36/Desktop/Reversi1/"
+#path = "/home/oliver/Desktop/Reversi3/"
 
-x = ReversiController(path, False, False, 1)
+#x = ReversiController(path, False, False, 1)
 
 #for i in range(99):
 #    x.load([(i + 1) * 100, 19900])
 #    x.play_two_ai(0,1)
 
-x.load([19900])
+#x.load([19800])
 #x.test()
-x.main(TOTAL_EPISODES)
+#x.main(TOTAL_EPISODES)
