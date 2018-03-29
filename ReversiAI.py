@@ -347,7 +347,7 @@ class ReversiController:
             self.population[j].load(self.path + "Reversi_%d_%d" %
                                     (j, episode_numbers[j]))
 
-path = "/Users/student36/Desktop/Reversi1/"
+path = "/Users/student36/Desktop/ReinforcementLearning/Reversi1/"
 #path = "/home/oliver/Desktop/Reversi3/"
 
 #x = ReversiController(path, False, False, 1)

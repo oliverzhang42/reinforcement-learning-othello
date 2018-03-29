@@ -13,7 +13,7 @@ env = reversiBoard(8)
 env.reset()
 mc.setBoard(env.board)
 
-path = "/Users/student36/Desktop/Reversi1/"
+path = "/Users/student36/Desktop/ReinforcementLearning/Reversi1/"
 #path = "/home/oliver/Desktop/Reversi3/"
 
 controller = ReversiController(path, False, False, 1, epsilon = 10000)
