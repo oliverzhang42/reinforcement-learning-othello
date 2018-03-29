@@ -10,7 +10,7 @@ import random
 import h5py
 import time
 import numpy as np
-from reversi import reversiBoard 
+from reversi import * 
 import copy
 
 # Global Variables
@@ -168,12 +168,12 @@ class ReversiPlayer:
     def load(self, s):
         self.model.load_weights(s)
 
-    def policy(self, observation, env):
+    def policy(self, observation):
         # Value is an array. The 0th element corresponds to (0,0), the 1st: (0,1)
         # the 8th: (1,0), etc.
         value = []
 
-        possible_moves = env.move_generator()
+        possible_moves = findMovesWithoutEnv(observation)
 
         if(len(possible_moves) == 0):
             # Passes
@@ -243,7 +243,7 @@ class ReversiController:
                 #time.sleep(5)
 
             # Chose a move and take it
-            move = player[t % 2].policy(observation, self.env)
+            move = player[t % 2].policy(observation)
             
             observation, reward, done, info = self.env.step(move)
 
@@ -291,7 +291,7 @@ class ReversiController:
             self.env.render()
             
             # Chose a move and take it
-            move = self.population[0].policy(board, self.env)
+            move = self.population[0].policy(board)
 
             observation, reward, done, info = self.env.step(move)
 

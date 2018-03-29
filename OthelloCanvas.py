@@ -30,7 +30,7 @@ def makeMove(event):
         if(done):
             print("Done!!!")
         else:
-            move = controller.population[0].policy(observation, env)
+            move = controller.population[0].policy(observation)
 
             env.step(move)
 
@@ -45,7 +45,7 @@ def passMove(event):
     if(done):
         print("Done!!!")
     else:
-        move = controller.population[0].policy(observation, env)
+        move = controller.population[0].policy(observation)
 
         env.step(move)
 

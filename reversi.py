@@ -189,3 +189,10 @@ class reversiBoard():
             self.reverse()
             self.to_play *= -1
             return copy.deepcopy(self.board), reward, done, {}
+
+#@Static Function
+def findMovesWithoutEnv(board):
+    env = reversiBoard(8)
+    env.board = board
+    env.to_play = 1
+    return env.move_generator()
