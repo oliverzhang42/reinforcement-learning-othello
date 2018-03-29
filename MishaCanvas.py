@@ -27,6 +27,9 @@ class BasicMishaCanvas(Canvas):
      
     def fillPoint(self, x, y):
         self.itemconfig(self.rects[x][y], fill = "black")
+
+    def colorPoint(self, x, y, color):
+        self.itemconfig(self.rects[x][y], fill = color)
  
     def erasePoint(self, x, y):
         self.itemconfig(self.rects[x][y], fill = "white")
@@ -35,6 +38,16 @@ class BasicMishaCanvas(Canvas):
         if self.itemcget(self.rects[x][y],"fill") == "black":
             return True
         return False
+
+    def setBoard(self, board):
+        for i in range(len(board)):
+            for j in range(len(board)):
+                if(board[i][j] == 0):
+                    self.erasePoint(i,j)
+                elif(board[i][j] == 1):
+                    self.colorPoint(i,j, "blue")
+                else:
+                    self.colorPoint(i,j, "red")
  
     def isValid(self, x, y):
         if 0 <= x and x < self.rows and 0 <= y and y < self.cols:
