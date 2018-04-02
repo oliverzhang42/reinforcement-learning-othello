@@ -20,25 +20,25 @@ class Board():
     def __init__(self):
         """ Set up initial board configuration. """
         # Create the empty board array
-        self.__pieces = [None]*8
+        self.pieces = [None]*8
         for i in range(8):
-            self.__pieces[i] = [0]*8
+            self.pieces[i] = [0]*8
 
         # Set up the initial 4 pieces
-        self.__pieces[3][4] = 1
-        self.__pieces[4][3] = 1
-        self.__pieces[3][3] = -1;
-        self.__pieces[4][4] = -1;
+        self.pieces[3][4] = 1
+        self.pieces[4][3] = 1
+        self.pieces[3][3] = -1;
+        self.pieces[4][4] = -1;
 
     # Add [][] indexer syntax to the Board
     def __getitem__(self, index):
-        return self.__pieces[index]
+        return self.pieces[index]
 
-    def display(self, time):
+    def display(self):
         """" Display the board and the statistics of the ongoing game. """
         print("    A B C D E F G H")
         print("    ---------------")
-        for y in range(7,-1,-1):
+        for y in range(8):
             # Print the row number
             row = str(y+1) + ' |'
             for x in range(8):
@@ -49,16 +49,16 @@ class Board():
                 elif piece == 1:
                     row += "W "
                 else:
-                    row += ".",
+                    row += ". "
             
             row += '| ' + str(y+1)
             print(row)
         print("    ---------------")
         print("    A B C D E F G H\n")
 
-        print("STATISTICS (score / remaining time):")
-        print("Black: " + str(self.count(-1)) + ' / ' + str(time[-1]))
-        print("White: " + str(self.count(1)) + ' / ' + str(time[1]) + '\n')
+        print("STATISTICS (score)")
+        print("Black: " + str(self.count(-1)))
+        print("White: " + str(self.count(1)))
 
     def count(self, color):
         """ Count the number of pieces of the given color.
@@ -106,7 +106,7 @@ class Board():
         color = self[x][y]
 
         # Skip empty source squares
-         if color==0:
+        if color==0:
             return None
 
         # Search all possible directions
@@ -136,7 +136,10 @@ class Board():
         and moving in the given direction. """
         x,y = origin
         color = self[x][y]
-        flips = []
+        flips = False
+
+        #for j in Board._increment_move(origin, direction):
+            #print(j)
 
         for x,y in Board._increment_move(origin, direction):
             if self[x][y] == 0 and flips:
@@ -144,7 +147,7 @@ class Board():
             elif (self[x][y] == color or (self[x][y] == 0 and not flips)):
                 return None
             elif self[x][y] == -color:
-                flips.append((x,y))
+                flips = True
 
     def _get_flips(self, origin, direction, color):
         """ Get the list of flips for a vertex and a direction to use within 
@@ -162,12 +165,27 @@ class Board():
         return []
 
     @staticmethod
-    def _increment_move(move, direction):
-        """ Generator expression for incrementing moves """
-        move = map(sum, zip(move, direction))
-        while all(map(lambda x: 0 <= x < 8, move)):
-            yield move
-            move = map(sum, zip(move, direction))
+    def _increment_move(origin, direction):
+        move = []
+        
+        d = list(direction)
+        for i in range(8):
+            move.append(list(d))
+            d[0] += direction[0]
+            d[1] += direction[1]
+
+        for i in range(8):
+            move[i][0] += origin[0]
+            move[i][1] += origin[1]
+
+        return move
+             
+        
+        #""" Generator expression for incrementing moves """
+        #move = map(sum, zip(move, direction))
+        #while all(map(lambda x: 0 <= x < 8, move)):
+        #    yield move
+        #    move = map(sum, zip(move, direction))
 
 def get_col_char(col):
     """ Convert 1, 2, etc. to 'a', 'b', etc. """
@@ -186,19 +204,10 @@ def moves_string(moves):
 
 def print_moves(moves):
     """ Print the list of coordinates. """
-    print moves_string(moves)
+    print(moves_string(moves))
 
 def move_string(move):
     """ Convert a numeric (x,y) coordinate like (2,3) into a piece name like 'c4'. """
     (x,y) = move
     return get_col_char(x)+str(y+1)
 
-if __name__ == '__main__':
-    board = Board()
-    board.display()
-
-    print "Black: ",
-    print_moves(board.get_legal_moves(-1))
-
-    print "White: ",
-    print_moves(board.get_legal_moves(1))

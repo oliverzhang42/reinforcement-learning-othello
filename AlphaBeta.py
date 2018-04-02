@@ -2,12 +2,14 @@
 #https://github.com/hylbyj/Alpha-Beta-Pruning-for-Othello-Game/blob/master/othello.py
 #ply is the depth
 
+import math
 from ReversiAI import ReversiController, process
 import numpy as np
 from othelloBoard import Board
+from copy import deepcopy
 
-path = "/Users/student36/Desktop/ReinforcementLearning/Reversi1/"
-#path = "/home/oliver/Desktop/Reversi3/"
+#path = "/Users/student36/Desktop/ReinforcementLearning/Reversi1/"
+path = "/home/oliver/git/othello/reinforcement-learning-othello/"
 
 controller = ReversiController(path, False, False, 1)
 controller.load([40000])
@@ -46,7 +48,7 @@ class AlphaBeta():
            return score,None
         print(ply)
         return_move = moves[0]
-        bestscore = - StudentEngine.INFINITY
+        bestscore = - math.inf
         print("using minmax best score: "+ str(bestscore))
         #ply = 4
         #will define ply later;
@@ -70,7 +72,7 @@ class AlphaBeta():
         #   return board.count(color)
         if ply == 0:
            return self.policy(board, color)
-        bestscore = -StudentEngine.INFINITY
+        bestscore = -math.inf
         for move in moves:
             newboard = deepcopy(board)
             newboard.execute_move(move,color)
@@ -85,7 +87,7 @@ class AlphaBeta():
         #   return board.count(color)
         if ply == 0:
            return self.policy(board, color)
-        bestscore = StudentEngine.INFINITY
+        bestscore = math.inf
         for move in moves:
             newboard = deepcopy(board)
             newboard.execute_move(move,color)
@@ -97,15 +99,16 @@ class AlphaBeta():
     #2) Alpha-beta Othello player
     #I modify the three functions and initially set alpha, beta as +infinity and -infinity. The functions are listed:
     def _minmax_with_alpha_beta(self, board, color, ply):
+        print(board.pieces)
         moves = board.get_legal_moves(color)
-        #print "leagal move" + str(moves)
+        print(board.pieces)
         if not isinstance(moves, list):
            score = board.count(color)
            return score, None
 
         #print ply
         return_move = moves[0]
-        bestscore = - StudentEngine.INFINITY
+        bestscore = - math.inf
         #print "using alpha_beta best score:"+ str(bestscore)
         #ply = 4
         #will define ply later;
@@ -113,7 +116,7 @@ class AlphaBeta():
             newboard = deepcopy(board)
             newboard.execute_move(move,color)
 
-            score = self.min_score_alpha_beta(newboard, -color, ply, StudentEngine.INFINITY, -StudentEngine.INFINITY)
+            score = self.min_score_alpha_beta(newboard, -color, ply, math.inf, -math.inf)
             if score > bestscore:
                bestscore = score
                return_move = move
@@ -125,7 +128,7 @@ class AlphaBeta():
     def max_score_alpha_beta(self, board, color, ply, alpha, beta):
         if ply == 0:
             return self.policy(board, color)
-        bestscore = -StudentEngine.INFINITY
+        bestscore = -math.inf
         for move in board.get_legal_moves(color):
             newboard = deepcopy(board)
             newboard.execute_move(move,color)
@@ -140,7 +143,7 @@ class AlphaBeta():
     def min_score_alpha_beta(self, board, color, ply, alpha, beta):
           if ply == 0:
              return self.policy(board, color)
-          bestscore = StudentEngine.INFINITY
+          bestscore = math.inf
           for move in board.get_legal_moves(color):
               newboard = deepcopy(board)
               newboard.execute_move(move,color)
@@ -151,10 +154,3 @@ class AlphaBeta():
                  return bestscore
               beta = min(beta,bestscore)
           return bestscore
-
-
-x = AlphaBeta()
-board = Board()
-x.policy(array, 1)
-
-print(x._minmax_with_alpha_beta(board, 1, 5))
