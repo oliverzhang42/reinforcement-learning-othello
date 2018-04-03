@@ -3,7 +3,6 @@
 #ply is the depth
 
 import math
-from ReversiAI import ReversiController, process
 import numpy as np
 from othelloBoard import Board
 from copy import deepcopy
@@ -11,8 +10,20 @@ from copy import deepcopy
 path = "/Users/student36/reinforcement-learning-othello/"
 #path = "/home/oliver/git/othello/reinforcement-learning-othello/"
 
-controller = ReversiController(path, False, False, 1)
-controller.load([19900])
+def process(array):
+    new_array = []
+    pieces = [0, 1, -1]
+    
+    for i in range(3):
+        board = []
+        for j in range(8):
+            row = []
+            for k in range(8):
+                row.append(int(array[j][k] == pieces[i]))
+            board.append(row)
+        new_array.append(board)
+
+    return new_array
 
 def reverse(board):
     newBoard = [[0 for i in range(8)] for j in range(8)]
@@ -25,19 +36,20 @@ def reverse(board):
 
 
 class AlphaBeta():
-    def __init__(self):
-        pass
+    def __init__(self, controller):
+        self.controller = controller
     
     def policy(self, board, color):
-        global controller
         if(color == -1):
             board = reverse(board)
         processedBoard = process(board)
         processedBoard = np.array([processedBoard])
-        return controller.population[0].model.predict(processedBoard)[0][0]
+        return self.controller.population[0].model.predict(processedBoard)[0][0]
 
     #How I implement minimax algorithm:
-    #I separated minimax into three functions, the first one is minimax which is the general function acting like get the min or the max value based on the depth it currently explores:
+    #I separated minimax into three functions, the first one is minimax which is
+    #the general function acting like get the min or the max value based on the
+    #depth it currently explores:
     def _minmax(self, board, color, ply):
         #need to get all the legal moves
         moves = board.get_legal_moves(color)

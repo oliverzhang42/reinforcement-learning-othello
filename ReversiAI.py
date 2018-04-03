@@ -12,6 +12,8 @@ import time
 import numpy as np
 from reversi import * 
 import copy
+from othelloBoard import Board
+from AlphaBeta import AlphaBeta
 
 # Global Variables
 
@@ -78,13 +80,14 @@ def rotate_90(array):
     return new_array
 
 class ReversiPlayer:
-    def __init__(self, learning_rate = 0.00005, epsilon = 2,
+    def __init__(self, parent = None, learning_rate = 0.00005, epsilon = 2,
                  epsilon_increment = 0.00005, debugging = False):
         self.learning_rate = learning_rate
         self.epsilon = epsilon
         self.epsilon_increment = epsilon_increment
         self.experience = []
         self.debugging = debugging
+        self.parent = parent
 
         self.create_model()
 
@@ -181,18 +184,8 @@ class ReversiPlayer:
         if(self.debugging):
             print(possible_moves)
         
-        for i in range(BOARD_SIZE):
-            for j in range(BOARD_SIZE):
-                if((i,j) in possible_moves):
-                    move = copy.deepcopy(observation)
-                    # We always assume that we're player 1.
-                    move[i][j] = 1
-                    move = process(move)
-                    move = np.array([move])
-                    value.append(self.model.predict(move)[0][0])
-                else:
-                    value.append(-1)
-
+        decision_tree = AlphaBeta(self.parent)
+        
         variation = random.random()
         
         if(variation < 1/self.epsilon):
@@ -201,11 +194,9 @@ class ReversiPlayer:
                 print("Random Move for player " + str(env.to_play))
             return random.choice(possible_moves)
         else:
-            if(self.debugging):
-                print(np.array(value).tolist())
-            index = value.index(max(value))
-            action = (index // 8,index % 8)
-            return action
+            board = Board()
+            board.pieces = observation
+            return decision_tree._minmax_with_alpha_beta(board, 1, 5)
 
 class ReversiController:
     def __init__(self, path, display_img, debugging, population_size,
@@ -218,7 +209,7 @@ class ReversiController:
         if(debugging):
             epsilon = 20000
 
-        self.population = [ReversiPlayer(learning_rate, epsilon,
+        self.population = [ReversiPlayer(self, learning_rate, epsilon,
                                          epsilon_increment, debugging)
                            for i in range(population_size)]
 
@@ -346,11 +337,10 @@ class ReversiController:
             self.population[j].load(self.path + "Reversi_%d_%d" %
                                     (j, episode_numbers[j]))
 
-path = "/Users/student36/Desktop/ReinforcementLearning/Reversi1/"
+path = "/Users/student36/reinforcement-learning-othello/"
 #path = "/home/oliver/Desktop/Reversi3/"
 
 #x = ReversiController(path, False, False, 1)
-
 #for i in range(99):
 #    x.load([(i + 1) * 100, 19900])
 #    x.play_two_ai(0,1)
