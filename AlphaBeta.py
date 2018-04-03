@@ -99,12 +99,11 @@ class AlphaBeta():
     #2) Alpha-beta Othello player
     #I modify the three functions and initially set alpha, beta as +infinity and -infinity. The functions are listed:
     def _minmax_with_alpha_beta(self, board, color, ply):
-        print(board.pieces)
+        #print(board.pieces)
         moves = board.get_legal_moves(color)
-        print(board.pieces)
-        if not isinstance(moves, list):
-           score = board.count(color)
-           return score, None
+        #print(board.pieces)
+        if len(moves) == 0:
+            return [0, (-1, -1)]
 
         #print ply
         return_move = moves[0]

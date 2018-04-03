@@ -165,20 +165,24 @@ class Board():
         return []
 
     @staticmethod
-    def _increment_move(origin, direction):
-        move = []
-        
-        d = list(direction)
-        for i in range(8):
-            move.append(list(d))
-            d[0] += direction[0]
-            d[1] += direction[1]
-
-        for i in range(8):
-            move[i][0] += origin[0]
-            move[i][1] += origin[1]
-
-        return move
+    def _increment_move(move, direction):
+        move = list(map(sum, list(zip(move, direction))))
+        while all([0 <= x < 8 for x in move]):
+            yield move
+            move = list(map(sum, list(zip(move, direction))))
+##        move = []
+##        
+##        d = list(direction)
+##        for i in range(8):
+##            move.append(list(d))
+##            d[0] += direction[0]
+##            d[1] += direction[1]
+##
+##        for i in range(8):
+##            move[i][0] += origin[0]
+##            move[i][1] += origin[1]
+##
+##        return move
              
         
         #""" Generator expression for incrementing moves """
@@ -210,4 +214,3 @@ def move_string(move):
     """ Convert a numeric (x,y) coordinate like (2,3) into a piece name like 'c4'. """
     (x,y) = move
     return get_col_char(x)+str(y+1)
-

@@ -14,7 +14,10 @@ mc = BasicMishaCanvas(root, 8, 8, cellsize = 100)
 
 env = reversiBoard(8)
 env.reset()
+#env.reverse()
 mc.setBoard(env.board)
+
+
 
 #path = "/Users/student36/Desktop/ReinforcementLearning/Reversi1/"
 path = "/home/oliver/git/othello/reinforcement-learning-othello/"
@@ -39,16 +42,13 @@ def makeMove(event):
             board.pieces = observation
             
             (value, move) = alphabeta._minmax_with_alpha_beta(board, 1, 5)
-            print(alphabeta._minmax_with_alpha_beta(board, 1, 5))
-
-            print(move)
 
             env.step(move)
-            #env.step((move[1], move[0]))
 
             mc.setBoard(env.board)
     else:
        print("That Move cannot be made, make another one.")
+       #print(env.board)
 
 def passMove(event):
     global env
@@ -59,7 +59,9 @@ def passMove(event):
         print("Done!!!")
     else:
         board = Board()
-        value, move = alphabeta._minmax_with_alpha_beta(board, 1, 5)
+        board.pieces = observation
+            
+        (value, move) = alphabeta._minmax_with_alpha_beta(board, 1, 5)
 
         env.step(move)
 
