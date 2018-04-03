@@ -19,11 +19,11 @@ mc.setBoard(env.board)
 
 
 
-#path = "/Users/student36/Desktop/ReinforcementLearning/Reversi1/"
-path = "/home/oliver/git/othello/reinforcement-learning-othello/"
+path = "/Users/student36/reinforcement-learning-othello/"
+#path = "/home/oliver/git/othello/reinforcement-learning-othello/"
 
 controller = ReversiController(path, False, False, 1, epsilon = 10000)
-controller.load([40000])
+controller.load([19900])
 
 alphabeta = AlphaBeta.AlphaBeta()
 

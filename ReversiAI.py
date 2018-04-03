@@ -94,7 +94,6 @@ class ReversiPlayer:
         self.model.add(Conv2D(64, (3,3), activation = 'relu', padding = 'same',
                               input_shape = (3,8,8)))
         self.model.add(BatchNormalization())
-
         self.model.add(Conv2D(64, (3,3), activation = 'relu', padding = 'same'))
         self.model.add(BatchNormalization())
         self.model.add(Conv2D(128, (3,3), activation = 'relu', padding = 'same'))
