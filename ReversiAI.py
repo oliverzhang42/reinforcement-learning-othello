@@ -18,7 +18,7 @@ from AlphaBeta import AlphaBeta
 # Global Variables
 
 # After Every SAVE_FREQUENCY episodes, we save the weights of the model in path.
-SAVE_FREQUENCY = 100
+SAVE_FREQUENCY = 1000
 
 # After Every WIPE_FREQUENCY episodes, we wipe the history of the two players.
 WIPE_FREQUENCY = 10
@@ -196,7 +196,8 @@ class ReversiPlayer:
         else:
             board = Board()
             board.pieces = observation
-            return decision_tree._minmax_with_alpha_beta(board, 1, 5)
+            value, move = decision_tree._minmax_with_alpha_beta(board, 1, 5)
+            return move
 
 class ReversiController:
     def __init__(self, path, display_img, debugging, population_size,
