@@ -21,10 +21,10 @@ mc.setBoard(env.board)
 
 
 #path = "/Users/student36/reinforcement-learning-othello/"
-path = "/home/oliver/git/othello/reinforcement-learning-othello/Weights_Folder2/"
+path = "/home/oliver/git/othello/reinforcement-learning-othello/Weights_Folder3/"
 
 controller = ReversiController(path, False, False, 1, epsilon = 10000)
-controller.load([0])
+controller.load([53000])
 
 def reverse(board):
     d = {1: -1, 0:0, -1:1}
@@ -53,7 +53,7 @@ def makeMove(event):
             
             #time.sleep(1)
             
-            value, move = controller.population[0].policy(observation)
+            move = controller.population[0].policy(observation)
             
             observation, reward, done, info = env.step(move)
 

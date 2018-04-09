@@ -196,7 +196,7 @@ class ReversiPlayer:
         else:
             board = Board()
             board.pieces = observation
-            value, move = decision_tree._minmax_with_alpha_beta(board, 1, 5)
+            value, move = decision_tree._minmax_with_alpha_beta(board, 1, 7)
             return move
 
 class ReversiController:
