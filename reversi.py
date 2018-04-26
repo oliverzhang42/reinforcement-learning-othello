@@ -197,33 +197,33 @@ def findMovesWithoutEnv(board):
     return env.move_generator()
 
 
-env = reversiBoard(8)
-for i in range(64):
-   env.render()
-   row = int(input("Placyer 1 Row?"))
-   col = int(input("Placyer 1 Col?"))
-
-   action = (row, col)
-
-   observation, reward, done, info = env.step(action)
-   env.render()
-
-   board = copy.deepcopy(observation)
-
-   if(done):
-      print("End of Game")
-      break
-
-   # Chose a move and take it
-
-   row = int(input("Placyer 2 Row?"))
-   col = int(input("Placyer 2 Col?"))
-
-   observation, reward, done, info = env.step((row, col))
-   
-   env.render()
-
-   if(done):
-      print("End of Game")
-      break
+#env = reversiBoard(8)
+#for i in range(64):
+#   env.render()
+#   row = int(input("Player 1 Row?"))
+#   col = int(input("Player 1 Col?"))
+#
+#   action = (row, col)
+#
+#   observation, reward, done, info = env.step(action)
+#   env.render()
+#
+#   board = copy.deepcopy(observation)
+#
+#   if(done):
+#      print("End of Game")
+#      break
+#
+#   # Chose a move and take it
+#
+#   row = int(input("Player 2 Row?"))
+#   col = int(input("Player 2 Col?"))
+#
+#   observation, reward, done, info = env.step((row, col))
+#   
+#   env.render()
+#
+#   if(done):
+#      print("End of Game")
+#      break
 

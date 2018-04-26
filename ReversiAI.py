@@ -42,6 +42,14 @@ BATCH_SIZE = 64
 # Episodes before switching which model to train
 EPISODES_BEFORE_SWITCH = 200
 
+def reverse(array):
+    newarray = copy.deepcopy(array)
+    d = {1:-1, 0:0, -1:1}
+    for i in range(len(array)):
+        for j in range(len(array[0])):
+            newarray[i][j] = d[array[i][j]]
+    return newarray
+
 def rotate_array(array):
     for i in range(len(array)):
         array[0] = rotate_90(array[0])
@@ -170,10 +178,13 @@ class ReversiPlayer:
     def load(self, s):
         self.model.load_weights(s)
 
-    def policy(self, observation):
+    def policy(self, observation, player):
         # Value is an array. The 0th element corresponds to (0,0), the 1st: (0,1)
         # the 8th: (1,0), etc.
         value = []
+
+        if(player == -1):
+            observation = reverse(observation)
 
         possible_moves = findMovesWithoutEnv(observation)
 
@@ -218,9 +229,12 @@ class RandomPlayer(ReversiPlayer):
     def load(self):
         pass
 
-    def policy(self, observation):
-        possibleMoves = findMovesWithoutEnv(observation)
+    def policy(self, observation, player):
+        if(player == -1):
+            observation = reverse(observation)
         
+        possibleMoves = findMovesWithoutEnv(observation)
+
         if(len(possibleMoves) == 0):
             return (-1, -1)
   
@@ -244,7 +258,10 @@ class BasicPlayer(RandomPlayer):
                 score += observation[i][j] * self.weights[i][j]
         return score
 
-    def policy(self, observation):
+    def policy(self, observation, player):
+        if(player == -1):
+            observation = reverse(observation)
+
         possibleMoves = findMovesWithoutEnv(observation)
 
         bestScore = -1000
@@ -252,7 +269,7 @@ class BasicPlayer(RandomPlayer):
 
         for move in possibleMoves:
             newobs = Board()
-            newobs.pieces = copy.deepcopy(observation.pieces)
+            newobs.pieces = copy.deepcopy(observation)
             newobs.execute_move(move, 1)
             tempScore = self.calculateScore(newobs.pieces)
             if(tempScore > bestScore):
@@ -280,6 +297,7 @@ class ReversiController:
         player = [self.population[index1], self.population[index2]]
 
         d = {1: 0, -1: 1}
+        e = {0: 1, 1: -1}
 
         observation = self.env.reset()
 
@@ -292,11 +310,11 @@ class ReversiController:
                 self.env.render()
             
             if(self.debugging):
-                self.env.render()
+                pass
                 #time.sleep(5)
 
             # Chose a move and take it
-            move = player[t % 2].policy(observation)
+            move = player[t % 2].policy(observation, e[t % 2])
             
             observation, reward, done, info = self.env.step(move)
 
@@ -333,6 +351,7 @@ class ReversiController:
                 player[0].add_to_history(state_array[0], reward)
                 player[1].add_to_history(state_array[1], -reward)
 
+                return reward
         return reward
         
     def test(self):
@@ -344,7 +363,7 @@ class ReversiController:
             self.env.render()
             
             # Chose a move and take it
-            move = self.population[0].policy(board)
+            move = self.population[0].policy(board, 1)
 
             observation, reward, done, info = self.env.step(move)
 
@@ -403,7 +422,8 @@ class ReversiController:
 #path = "/Users/student36/reinforcement-learning-othello/"
 path = "/home/oliver/git/othello/reinforcement-learning-othello/Weights_Folder3/"
 
-x = ReversiController(path, True, True, 1)
-x.population[0] = RandomPlayer()
-for i in range(99):
-    x.play_two_ai(0,0)
+#x = ReversiController(path, True, True, 2)
+#x.population[0] = RandomPlayer()
+#x.population[1] = BasicPlayer()
+#for i in range(1):
+#    x.play_two_ai(0,1)

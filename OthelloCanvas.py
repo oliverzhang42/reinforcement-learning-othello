@@ -9,19 +9,18 @@ from copy import deepcopy
 import time
 
 root = Tk()
-# Grid is 10x15, cell size 20 pixels, white to start with
+# Grid is 8x8, cell size 100 pixels, white to start with
 #  It will pack itself into the root
 mc = BasicMishaCanvas(root, 8, 8, cellsize = 100)
 
 env = reversiBoard(8)
 env.reset()
-#env.reverse()
 mc.setBoard(env.board)
 
 
 
-#path = "/Users/student36/reinforcement-learning-othello/"
-path = "/home/oliver/git/othello/reinforcement-learning-othello/Weights_Folder3/"
+path = "/Users/student36/reinforcement-learning-othello/Weights_Folder3/"
+#path = "/home/oliver/git/othello/reinforcement-learning-othello/Weights_Folder3/"
 
 controller = ReversiController(path, False, False, 1, epsilon = 10000)
 controller.load([53000])
@@ -49,11 +48,11 @@ def makeMove(event):
         if(done):
             print("Done!!!")
         else:
-            mc.setBoard(reverse(observation))
+            mc.setBoard(observation)
             
             #time.sleep(1)
             
-            move = controller.population[0].policy(observation)
+            move = controller.population[0].policy(observation, -1)
             
             observation, reward, done, info = env.step(move)
 
@@ -70,11 +69,11 @@ def passMove(event):
     if(done):
         print("Done!!!")
     else:
-        move = controller.population[0].policy(observation)
+        move = controller.population[0].policy(observation, -1)
 
         observation, reward, done, info = env.step(move)
 
-        mc.setBoard(env.board)
+        mc.setBoard(observation)
 
 mc.bind("<Button-1>", makeMove)
 mc.bind("<Button-2>", passMove)
