@@ -165,8 +165,7 @@ class reversiBoard():
 
         if(x == -1 and y == -1):
             # Player decides to pass
-            self.reverse()
-            self.to_play *= 1
+            self.to_play *= -1
             self.pass_counter += 1
             
             if(self.pass_counter >= 2):
@@ -177,16 +176,16 @@ class reversiBoard():
             else:
                 return copy.deepcopy(self.board), reward, done, {}
 
-        if(not self.ValidMove(x, y, 1)):
+        if(not self.ValidMove(x, y, self.to_play)):
             print("Invalid Move!")
             done = True
             reward = -1*self.to_play # Gives a 1 if player 1 wins and vice versa
             return [], reward, done, {}
         else:
             # Always make a move like its the first person playing
+            print("to_play: {} ({},{})".format(self.to_play, x, y))
             self.pass_counter = 0
-            self.MakeMove(x,y,1)
-            self.reverse()
+            self.MakeMove(x,y,self.to_play)
             self.to_play *= -1
             return copy.deepcopy(self.board), reward, done, {}
 
@@ -196,3 +195,35 @@ def findMovesWithoutEnv(board):
     env.board = board
     env.to_play = 1
     return env.move_generator()
+
+
+env = reversiBoard(8)
+for i in range(64):
+   env.render()
+   row = int(input("Placyer 1 Row?"))
+   col = int(input("Placyer 1 Col?"))
+
+   action = (row, col)
+
+   observation, reward, done, info = env.step(action)
+   env.render()
+
+   board = copy.deepcopy(observation)
+
+   if(done):
+      print("End of Game")
+      break
+
+   # Chose a move and take it
+
+   row = int(input("Placyer 2 Row?"))
+   col = int(input("Placyer 2 Col?"))
+
+   observation, reward, done, info = env.step((row, col))
+   
+   env.render()
+
+   if(done):
+      print("End of Game")
+      break
+
