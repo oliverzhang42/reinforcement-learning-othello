@@ -88,7 +88,7 @@ def rotate_90(array):
     return new_array
 
 class ReversiPlayer:
-    def __init__(self, parent = None, learning_rate = 0.00005, epsilon = 2,
+    def __init__(self, index, parent = None, learning_rate = 0.00005, epsilon = 2,
                  epsilon_increment = 0.00005, debugging = False):
         self.learning_rate = learning_rate
         self.epsilon = epsilon
@@ -96,6 +96,7 @@ class ReversiPlayer:
         self.experience = []
         self.debugging = debugging
         self.parent = parent
+        self.index = index
 
         self.create_model()
 
@@ -207,7 +208,8 @@ class ReversiPlayer:
         else:
             board = Board()
             board.pieces = observation
-            value, move = decision_tree._minmax_with_alpha_beta(board, 1, 7)
+            value, move = decision_tree._minmax_with_alpha_beta(board, 1, 7, self.index)
+            print(value)
             return move
 
 class RandomPlayer(ReversiPlayer):
@@ -289,7 +291,7 @@ class ReversiController:
         if(debugging):
             epsilon = 20000
 
-        self.population = [ReversiPlayer(self, learning_rate, epsilon,
+        self.population = [ReversiPlayer(i, self, learning_rate, epsilon,
                                          epsilon_increment, debugging)
                            for i in range(population_size)]
 

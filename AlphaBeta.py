@@ -39,18 +39,18 @@ class AlphaBeta():
     def __init__(self, controller):
         self.controller = controller
     
-    def policy(self, board, color):
+    def policy(self, board, color, index):
         if(color == -1):
             board = reverse(board)
         processedBoard = process(board)
         processedBoard = np.array([processedBoard])
-        return self.controller.population[0].model.predict(processedBoard)[0][0]
+        return self.controller.population[index].model.predict(processedBoard)[0][0]
 
     #How I implement minimax algorithm:
     #I separated minimax into three functions, the first one is minimax which is
     #the general function acting like get the min or the max value based on the
     #depth it currently explores:
-    def _minmax(self, board, color, ply):
+    def _minmax(self, board, color, ply, index):
         #need to get all the legal moves
         moves = board.get_legal_moves(color)
 
@@ -68,7 +68,7 @@ class AlphaBeta():
             newboard = deepcopy(board)
             newboard.execute_move(move,color)
 
-            score = self.min_score(newboard, -color, ply)
+            score = self.min_score(newboard, -color, ply, index)
             if score > bestscore:
                 bestscore = score
                 return_move = move
@@ -78,39 +78,41 @@ class AlphaBeta():
         return (bestscore,return_move)
 
     #function max_score is aimed to maximize the score of player and function min_score is aimed to minimize the score of opponent. They all only return the value.
-    def max_score(self, board, color, ply):
+    def max_score(self, board, color, ply, index):
         moves = board.get_legal_moves(color)
         #if not isinstance(moves, list):
         #   return board.count(color)
         if ply == 0:
-           return self.policy(board, color)
+           return self.policy(board, color, index)
         bestscore = -math.inf
         for move in moves:
             newboard = deepcopy(board)
             newboard.execute_move(move,color)
-            score = self.min_score(newboard, -color, ply-1)
+            score = self.min_score(newboard, -color, ply-1, index)
             if score > bestscore:
                 bestscore = score
         return bestscore
 
-    def min_score(self, board, color, ply):
+    def min_score(self, board, color, ply, index):
         moves = board.get_legal_moves(color)
         #if not isinstance(moves, list):
         #   return board.count(color)
         if ply == 0:
-           return self.policy(board, color)
+           return self.policy(board, color, index)
         bestscore = math.inf
         for move in moves:
             newboard = deepcopy(board)
             newboard.execute_move(move,color)
-            score = self.max_score(newboard, -color, ply-1)
+            score = self.max_score(newboard, -color, ply-1, index)
             if score < bestscore:
                 bestscore = score
         return bestscore
 
+#=========================================================================
+  
     #2) Alpha-beta Othello player
     #I modify the three functions and initially set alpha, beta as +infinity and -infinity. The functions are listed:
-    def _minmax_with_alpha_beta(self, board, color, ply):
+    def _minmax_with_alpha_beta(self, board, color, ply, index):
         #print(board.pieces)
         moves = board.get_legal_moves(color)
         #print(board.pieces)
@@ -127,7 +129,7 @@ class AlphaBeta():
             newboard = deepcopy(board)
             newboard.execute_move(move,color)
 
-            score = self.min_score_alpha_beta(newboard, -color, ply, math.inf, -math.inf)
+            score = self.min_score_alpha_beta(newboard, -color, ply, math.inf, -math.inf, index)
             if score > bestscore:
                bestscore = score
                return_move = move
@@ -136,14 +138,19 @@ class AlphaBeta():
         return (bestscore,return_move)
 
     #Also the max and min value function:
-    def max_score_alpha_beta(self, board, color, ply, alpha, beta):
+    def max_score_alpha_beta(self, board, color, ply, alpha, beta, index):
         if ply == 0:
-            return self.policy(board, color)
+            return self.policy(board, color, index)
         bestscore = -math.inf
-        for move in board.get_legal_moves(color):
+
+        moves = board.get_legal_moves(color)
+        if len(moves) == 0:
+            return self.policy(board, color, index)
+
+        for move in moves:
             newboard = deepcopy(board)
             newboard.execute_move(move,color)
-            score = self.min_score_alpha_beta(newboard, -color, ply-1, alpha, beta)
+            score = self.min_score_alpha_beta(newboard, -color, ply-1, alpha, beta, index)
             if score > bestscore:
                 bestscore = score
             if bestscore >= beta:
@@ -151,14 +158,19 @@ class AlphaBeta():
             alpha = max (alpha,bestscore)
         return bestscore
 
-    def min_score_alpha_beta(self, board, color, ply, alpha, beta):
+    def min_score_alpha_beta(self, board, color, ply, alpha, beta, index):
           if ply == 0:
-             return self.policy(board, color)
+             return self.policy(board, color, index)
           bestscore = math.inf
-          for move in board.get_legal_moves(color):
+
+          moves = board.get_legal_moves(color)
+          if len(moves) == 0:
+              return self.policy(board, color, index)
+  
+          for move in moves:
               newboard = deepcopy(board)
               newboard.execute_move(move,color)
-              score = self.max_score_alpha_beta(newboard, -color, ply-1, alpha, beta)
+              score = self.max_score_alpha_beta(newboard, -color, ply-1, alpha, beta, index)
               if score < bestscore:
                  bestscore = score
               if bestscore <= alpha:

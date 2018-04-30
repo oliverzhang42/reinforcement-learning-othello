@@ -19,12 +19,16 @@ env = reversiBoard(8)
 env.reset()
 mc.setBoard(env.board)
 
-path = "/Users/student36/reinforcement-learning-othello/Weights_Folder3/"
-#path = "/home/oliver/git/othello/reinforcement-learning-othello/Weights_Folder3/"
+#path = "/Users/student36/reinforcement-learning-othello/Weights_Folder3/"
+path = "/home/oliver/git/othello/reinforcement-learning-othello/Weights_Folder3/"
 
-controller = ReversiController(path, False, False, 2, epsilon = 10000)
+controller = ReversiController(path, True, True, 2, epsilon = 10000)
 controller.load([53000, 0])
-controller.population[1] = BasicPlayer()
+controller.population[0] = BasicPlayer()
+
+print(controller.population)
+
+#controller.population[1] = RandomPlayer()
 
 def fight(controller, index1, index2, toPlay):
     global mc
@@ -37,8 +41,11 @@ def fight(controller, index1, index2, toPlay):
     e = {0: 1, 1: -1}
 
     # Chose a move and take it
+
     move = player[d[toPlay]].policy(observation, toPlay)
-        
+    
+    print(str(toPlay) + ", " + str(move))
+    
     observation, reward, done, info = controller.env.step(move)
 
     mc.setBoard(observation)
