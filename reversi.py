@@ -183,7 +183,7 @@ class reversiBoard():
             return [], reward, done, {}
         else:
             # Always make a move like its the first person playing
-            print("to_play: {} ({},{})".format(self.to_play, x, y))
+            #print("to_play: {} ({},{})".format(self.to_play, x, y))
             self.pass_counter = 0
             self.MakeMove(x,y,self.to_play)
             self.to_play *= -1
