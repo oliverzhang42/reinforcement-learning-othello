@@ -151,9 +151,9 @@ class reversiBoard():
         if(positives == negatives):
             return 0
         elif(positives > negatives):
-            return 1 * self.to_play
+            return 1
         else:
-            return -1 * self.to_play
+            return -1
     
     # 
     def step(self, action):
