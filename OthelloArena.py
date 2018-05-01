@@ -19,12 +19,12 @@ env = reversiBoard(8)
 env.reset()
 mc.setBoard(env.board)
 
-#path = "/Users/student36/reinforcement-learning-othello/Weights_Folder3/"
-path = "/home/oliver/git/othello/reinforcement-learning-othello/Weights_Folder3/"
+#path = "/Users/student36/reinforcement-learning-othello/Weights_Folder1/"
+path = "/home/oliver/git/othello/reinforcement-learning-othello/Weights_Folder1/"
 
 controller = ReversiController(path, True, True, 2, epsilon = 10000)
-controller.load([53000, 0])
-controller.population[0] = BasicPlayer()
+controller.load([16000, 17000])
+#controller.population[1] = BasicPlayer()
 
 print(controller.population)
 
