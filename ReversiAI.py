@@ -18,7 +18,7 @@ from AlphaBeta import AlphaBeta
 # Global Variables
 
 # After Every SAVE_FREQUENCY episodes, we save the weights of the model in path.
-SAVE_FREQUENCY = 1000
+SAVE_FREQUENCY = 500
 
 # After Every WIPE_FREQUENCY episodes, we wipe the history of the two players.
 WIPE_FREQUENCY = 10
@@ -103,16 +103,16 @@ class ReversiPlayer:
     def create_model(self):
         self.model = keras.models.Sequential()
 
-        self.model.add(Conv2D(64, (3,3), activation = 'relu', padding = 'same',
-                              input_shape = (3,8,8)))
-        self.model.add(BatchNormalization())
-        self.model.add(Conv2D(64, (3,3), activation = 'relu', padding = 'same'))
-        self.model.add(BatchNormalization())
-        self.model.add(Conv2D(128, (3,3), activation = 'relu', padding = 'same'))
-        self.model.add(BatchNormalization())
-        self.model.add(Conv2D(128, (3,3), activation = 'relu', padding = 'same'))
-        self.model.add(BatchNormalization())
-        self.model.add(Flatten())
+        #self.model.add(Conv2D(64, (3,3), activation = 'relu', padding = 'same',
+        #                      input_shape = (3,8,8)))
+        #self.model.add(BatchNormalization())
+        #self.model.add(Conv2D(64, (3,3), activation = 'relu', padding = 'same'))
+        #self.model.add(BatchNormalization())
+        #self.model.add(Conv2D(128, (3,3), activation = 'relu', padding = 'same'))
+        #self.model.add(BatchNormalization())
+        #self.model.add(Conv2D(128, (3,3), activation = 'relu', padding = 'same'))
+        #self.model.add(BatchNormalization())
+        self.model.add(Flatten(input_shape = (3,8,8)))
         self.model.add(Dense(256, activation = 'relu'))
         self.model.add(Dense(1, activation = 'tanh'))
 
@@ -208,7 +208,8 @@ class ReversiPlayer:
         else:
             board = Board()
             board.pieces = observation
-            value, move = decision_tree._minmax_with_alpha_beta(board, 1, 7, self.index)
+            value, move = decision_tree._minmax_with_alpha_beta(board, 1, 3, self.index)
+            #print(value)
             return move
 
 class RandomPlayer(ReversiPlayer):
@@ -320,6 +321,8 @@ class ReversiController:
             observation, reward, done, info = self.env.step(move)
 
             if(self.debugging):
+                print(self.env.to_play)
+                print("")
                 print("Move")
                 print(move)
                 print("")
@@ -327,9 +330,14 @@ class ReversiController:
                 print("Observation")
                 print(observation)
                 print("")
+
+                time.sleep(3)
             
             if(not done):
-                state_array[d[self.env.to_play]].append(observation)
+                if(self.env.to_play == 1):
+                    state_array[0].append(observation)
+                elif(self.env.to_play == -1):
+                    state_array[1].append(reverse(observation))
 
             # Check if done. We're only training once we finish the entire
             # episode. Here, the model which makes the last move has number
