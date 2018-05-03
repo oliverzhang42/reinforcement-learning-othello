@@ -363,40 +363,6 @@ class ReversiController:
                 return reward
         return reward
         
-    def test(self):
-        observation = self.env.reset()
-        
-        for i in range(64):
-            board = copy.deepcopy(observation)
-            
-            self.env.render()
-            
-            # Chose a move and take it
-            move = self.population[0].policy(board, 1)
-
-            observation, reward, done, info = self.env.step(move)
-
-            print(done)
-
-            if(done):
-                print("End of Game")
-                break
-
-            self.env.render()
-
-            row = int(input("Which Row?"))
-            col = int(input("Which Col?"))
-
-            action = (row, col)
-
-            observation, reward, done, info = self.env.step(action)
-
-
-            if(done):
-                print("End of Game")
-                break
-        
-
     def main(self, total_episodes):
         
         #Number of training episodes

@@ -23,7 +23,7 @@ path = "/Users/student36/reinforcement-learning-othello/Weights_Folder1/"
 #path = "/home/oliver/git/othello/reinforcement-learning-othello/Weights_Folder1/"
 
 controller = ReversiController(path, True, True, 2, epsilon = 10000)
-controller.load([2000, 2000])
+controller.load([2000, 0])
 #controller.population[1] = BasicPlayer()
 
 #print(controller.population)
