@@ -209,7 +209,7 @@ class ReversiPlayer:
             board = Board()
             board.pieces = observation
             value, move = decision_tree._minmax_with_alpha_beta(board, 1, 3, self.index)
-            #print(value)
+            print(value)
             return move
 
 class RandomPlayer(ReversiPlayer):
