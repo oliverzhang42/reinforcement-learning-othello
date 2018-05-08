@@ -19,11 +19,11 @@ mc.setBoard(env.board)
 
 
 
-path = "/Users/student36/reinforcement-learning-othello/Weights_Folder1/"
-#path = "/home/oliver/git/othello/reinforcement-learning-othello/Weights_Folder1/"
+#path = "/Users/student36/reinforcement-learning-othello/Weights_Folder1/"
+path = "/home/oliver/git/othello/reinforcement-learning-othello/Weights_Folder2/"
 
 controller = ReversiController(path, True, True, 1, epsilon = 10000)
-controller.load([17000])
+controller.load([32000])
 
 def reverse(board):
     d = {1: -1, 0:0, -1:1}
