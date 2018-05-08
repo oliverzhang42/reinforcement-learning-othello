@@ -8,8 +8,8 @@ from othelloBoard import Board
 from copy import deepcopy
 import time
 
-#path = "/Users/student36/reinforcement-learning-othello/Weights_Folder2/"
-path = "/home/oliver/git/othello/reinforcement-learning-othello/Weights_Folder2/"
+path = "/Users/student36/reinforcement-learning-othello/Weights_Folder2/"
+#path = "/home/oliver/git/othello/reinforcement-learning-othello/Weights_Folder2/"
 
 controller = ReversiController(path, False, False, 2, epsilon = 10000)
 controller.load([32000, 0])

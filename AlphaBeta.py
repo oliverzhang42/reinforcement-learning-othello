@@ -113,6 +113,9 @@ class AlphaBeta():
     #2) Alpha-beta Othello player
     #I modify the three functions and initially set alpha, beta as +infinity and -infinity. The functions are listed:
     def _minmax_with_alpha_beta(self, board, color, ply, index):
+        if ply == 0:
+            return self.policy(board, color, index)
+        
         #print(board.pieces)
         moves = board.get_legal_moves(color)
         #print(board.pieces)
@@ -130,6 +133,10 @@ class AlphaBeta():
             newboard.execute_move(move,color)
 
             score = self.min_score_alpha_beta(newboard, -color, ply, math.inf, -math.inf, index)
+            print(move)
+            print(score)
+            print("")
+            
             if score > bestscore:
                bestscore = score
                return_move = move
@@ -140,7 +147,10 @@ class AlphaBeta():
     #Also the max and min value function:
     def max_score_alpha_beta(self, board, color, ply, alpha, beta, index):
         if ply == 0:
+            print("")
+            print(color)
             return self.policy(board, color, index)
+        
         bestscore = -math.inf
 
         moves = board.get_legal_moves(color)
@@ -151,6 +161,11 @@ class AlphaBeta():
             newboard = deepcopy(board)
             newboard.execute_move(move,color)
             score = self.min_score_alpha_beta(newboard, -color, ply-1, alpha, beta, index)
+            #print("Max")
+            #print(move)
+            #print(score)
+            #print("")
+            
             if score > bestscore:
                 bestscore = score
             if bestscore >= beta:
@@ -160,7 +175,9 @@ class AlphaBeta():
 
     def min_score_alpha_beta(self, board, color, ply, alpha, beta, index):
           if ply == 0:
-             return self.policy(board, color, index)
+              print("")
+              print(color)
+              return self.policy(board, color, index)
           bestscore = math.inf
 
           moves = board.get_legal_moves(color)
@@ -171,6 +188,11 @@ class AlphaBeta():
               newboard = deepcopy(board)
               newboard.execute_move(move,color)
               score = self.max_score_alpha_beta(newboard, -color, ply-1, alpha, beta, index)
+              #print("Min")
+              #print(move)
+              #print(score)
+              #print("")
+
               if score < bestscore:
                  bestscore = score
               if bestscore <= alpha:
