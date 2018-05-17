@@ -210,7 +210,9 @@ class ReversiPlayer:
             board = Board()
             board.pieces = observation
             value, move = decision_tree._minmax_with_alpha_beta(board, 1, self.depth, self.index)
-            print("%.15f" % value)
+            #print("%.15f" % value)
+            #print(move)
+            #print("")
             return move
 
 class RandomPlayer(ReversiPlayer):
@@ -292,7 +294,7 @@ class ReversiController:
         if(debugging):
             epsilon = 20000
 
-        self.population = [ReversiPlayer(i, 2, self, learning_rate, epsilon,
+        self.population = [ReversiPlayer(i, 3, self, learning_rate, epsilon,
                                          epsilon_increment, debugging)
                            for i in range(population_size)]
 

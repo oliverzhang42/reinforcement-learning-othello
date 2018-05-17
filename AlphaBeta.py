@@ -132,10 +132,10 @@ class AlphaBeta():
             newboard = deepcopy(board)
             newboard.execute_move(move,color)
 
-            score = self.min_score_alpha_beta(newboard, -color, ply, math.inf, -math.inf, index)
-            print(move)
-            print(score)
-            print("")
+            score = self.min_score_alpha_beta(newboard, color, ply-1, math.inf, -math.inf, index)
+            #print(move)
+            #print(score)
+            #print("")
             
             if score > bestscore:
                bestscore = score
@@ -147,8 +147,8 @@ class AlphaBeta():
     #Also the max and min value function:
     def max_score_alpha_beta(self, board, color, ply, alpha, beta, index):
         if ply == 0:
-            print("")
-            print(color)
+            #print("")
+            #print(color)
             return self.policy(board, color, index)
         
         bestscore = -math.inf
@@ -160,7 +160,7 @@ class AlphaBeta():
         for move in moves:
             newboard = deepcopy(board)
             newboard.execute_move(move,color)
-            score = self.min_score_alpha_beta(newboard, -color, ply-1, alpha, beta, index)
+            score = self.min_score_alpha_beta(newboard, color, ply-1, alpha, beta, index)
             #print("Max")
             #print(move)
             #print(score)
@@ -175,8 +175,8 @@ class AlphaBeta():
 
     def min_score_alpha_beta(self, board, color, ply, alpha, beta, index):
           if ply == 0:
-              print("")
-              print(color)
+              #print("")
+              #print(color)
               return self.policy(board, color, index)
           bestscore = math.inf
 
@@ -187,7 +187,7 @@ class AlphaBeta():
           for move in moves:
               newboard = deepcopy(board)
               newboard.execute_move(move,color)
-              score = self.max_score_alpha_beta(newboard, -color, ply-1, alpha, beta, index)
+              score = self.max_score_alpha_beta(newboard, color, ply-1, alpha, beta, index)
               #print("Min")
               #print(move)
               #print(score)
