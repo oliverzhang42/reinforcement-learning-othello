@@ -40,162 +40,63 @@ class AlphaBeta():
         self.controller = controller
     
     def policy(self, board, color, index):
-        if(color == -1):
-            board = reverse(board)
+#        if(color == -1):
+#            board = reverse(board)
         processedBoard = process(board)
         processedBoard = np.array([processedBoard])
         return self.controller.population[index].model.predict(processedBoard)[0][0]
 
-    #How I implement minimax algorithm:
-    #I separated minimax into three functions, the first one is minimax which is
-    #the general function acting like get the min or the max value based on the
-    #depth it currently explores:
-    def _minmax(self, board, color, ply, index):
-        #need to get all the legal moves
-        moves = board.get_legal_moves(color)
+### This assumes passing is the end. In reality, passing gives an extra move
+### to a player. I'll need to revise this
+# Notes:
+#
+# First, the policy assumes color == 1. Just don't change it... (don't inclue
+# the color == -1, board = reverse(board)
+#
+# Second, when first calling it, do color = 1!!!
 
-        print("legal move " + str(moves))
+    def alphabeta(self, board, depth, alpha, beta, color, index):
+        if(depth == 0):
+            return self.policy(board, color, index), None
+
+        moves = board.get_legal_moves(color)
+        
         if not isinstance(moves, list):
-           score = self.policy(board, color)
-           return score,None
-        print(ply)
-        return_move = moves[0]
-        bestscore = - math.inf
-        print("using minmax best score: "+ str(bestscore))
-        #ply = 4
-        #will define ply later;
-        for move in moves:
-            newboard = deepcopy(board)
-            newboard.execute_move(move,color)
+            return self.policy(board, color, index), None
 
-            score = self.min_score(newboard, -color, ply, index)
-            if score > bestscore:
-                bestscore = score
-                return_move = move
-                print("return move " + str(return_move) + "bestscore " + str(bestscore))
-        #newboard = deepcopy(board)
-        #return max((value(newboard.execute_move(m, color)),m) for m in moves)
-        return (bestscore,return_move)
+        if(color == 1):
+            v = -math.inf
+            return_move = None
 
-    #function max_score is aimed to maximize the score of player and function min_score is aimed to minimize the score of opponent. They all only return the value.
-    def max_score(self, board, color, ply, index):
-        moves = board.get_legal_moves(color)
-        #if not isinstance(moves, list):
-        #   return board.count(color)
-        if ply == 0:
-           return self.policy(board, color, index)
-        bestscore = -math.inf
-        for move in moves:
-            newboard = deepcopy(board)
-            newboard.execute_move(move,color)
-            score = self.min_score(newboard, -color, ply-1, index)
-            if score > bestscore:
-                bestscore = score
-        return bestscore
+            for move in moves:
+                newboard = deepcopy(board)
+                newboard.execute_move(move,color)
 
-    def min_score(self, board, color, ply, index):
-        moves = board.get_legal_moves(color)
-        #if not isinstance(moves, list):
-        #   return board.count(color)
-        if ply == 0:
-           return self.policy(board, color, index)
-        bestscore = math.inf
-        for move in moves:
-            newboard = deepcopy(board)
-            newboard.execute_move(move,color)
-            score = self.max_score(newboard, -color, ply-1, index)
-            if score < bestscore:
-                bestscore = score
-        return bestscore
+                score, m = self.alphabeta(newboard, depth-1, alpha, beta, -1, index)
+                
+                if(score > v):
+                    v = score
+                    return_move = move
+                alpha = max(alpha, v)
+                
+                if(beta <= alpha):
+                    break
+            return v, return_move
+        else:
+            v = math.inf
+            return_move = None
 
-#=========================================================================
-  
-    #2) Alpha-beta Othello player
-    #I modify the three functions and initially set alpha, beta as +infinity and -infinity. The functions are listed:
-    def _minmax_with_alpha_beta(self, board, color, ply, index):
-        if ply == 0:
-            return self.policy(board, color, index)
-        
-        #print(board.pieces)
-        moves = board.get_legal_moves(color)
-        #print(board.pieces)
-        if len(moves) == 0:
-            return [0, (-1, -1)]
+            for move in moves:
+                newboard = deepcopy(board)
+                newboard.execute_move(move,color)
 
-        #print ply
-        return_move = moves[0]
-        bestscore = - math.inf
-        #print "using alpha_beta best score:"+ str(bestscore)
-        #ply = 4
-        #will define ply later;
-        for move in moves:
-            newboard = deepcopy(board)
-            newboard.execute_move(move,color)
+                score, m = self.alphabeta(newboard, depth - 1, alpha, beta, 1, index)
 
-            score = self.min_score_alpha_beta(newboard, color, ply-1, math.inf, -math.inf, index)
-            #print(move)
-            #print(score)
-            #print("")
-            
-            if score > bestscore:
-               bestscore = score
-               return_move = move
-               #print "return move" + str(return_move) + "best score" + str(bestscore)
+                if(score < v):
+                    v = score
+                    return_move = move
+                beta = min(beta, v)
 
-        return (bestscore,return_move)
-
-    #Also the max and min value function:
-    def max_score_alpha_beta(self, board, color, ply, alpha, beta, index):
-        if ply == 0:
-            #print("")
-            #print(color)
-            return self.policy(board, color, index)
-        
-        bestscore = -math.inf
-
-        moves = board.get_legal_moves(color)
-        if len(moves) == 0:
-            return self.policy(board, color, index)
-
-        for move in moves:
-            newboard = deepcopy(board)
-            newboard.execute_move(move,color)
-            score = self.min_score_alpha_beta(newboard, color, ply-1, alpha, beta, index)
-            #print("Max")
-            #print(move)
-            #print(score)
-            #print("")
-            
-            if score > bestscore:
-                bestscore = score
-            if bestscore >= beta:
-                return bestscore
-            alpha = max (alpha,bestscore)
-        return bestscore
-
-    def min_score_alpha_beta(self, board, color, ply, alpha, beta, index):
-          if ply == 0:
-              #print("")
-              #print(color)
-              return self.policy(board, color, index)
-          bestscore = math.inf
-
-          moves = board.get_legal_moves(color)
-          if len(moves) == 0:
-              return self.policy(board, color, index)
-  
-          for move in moves:
-              newboard = deepcopy(board)
-              newboard.execute_move(move,color)
-              score = self.max_score_alpha_beta(newboard, color, ply-1, alpha, beta, index)
-              #print("Min")
-              #print(move)
-              #print(score)
-              #print("")
-
-              if score < bestscore:
-                 bestscore = score
-              if bestscore <= alpha:
-                 return bestscore
-              beta = min(beta,bestscore)
-          return bestscore
+                if(beta <= alpha):
+                    break
+            return v, return_move

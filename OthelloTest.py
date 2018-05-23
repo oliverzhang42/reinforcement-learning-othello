@@ -7,9 +7,10 @@ import time
 from othelloBoard import Board
 from copy import deepcopy
 import time
+import math
 
-path = "/Users/student36/reinforcement-learning-othello/Weights_Folder2/"
-#path = "/home/oliver/git/othello/reinforcement-learning-othello/Weights_Folder2/"
+#path = "/Users/student36/reinforcement-learning-othello/Weights_Folder2/"
+path = "/home/oliver/git/othello/reinforcement-learning-othello/Weights_Folder4/"
 
 controller = ReversiController(path, True, True, 2, epsilon = 10000)
 controller.load([32000, 0])
@@ -46,7 +47,14 @@ board = [[0, 0, 0, 0, 0, 0, 0, 0],
        [-1, -1, -1, -1, -1, -1, -1, -1],
        [1, -1, -1, -1, -1, -1, -1, -1]]
 
-board2 = [[]]
+board2 = [[-1, -1, -1, -1, -1, -1, -1, -1],
+       [-1, -1, 1, 1, 1, 1, 1, 1],
+       [-1, 1, -1, -1, 1, -1, 1, 1],
+       [-1, 1, -1, -1, -1, 1, 1, 1],
+       [1, -1, -1, -1, -1, -1, 1, 1],
+       [1, -1, 1, -1, -1, -1, -1, 1],
+       [1, -1, -1, 1, -1, -1, 0, 1],
+       [1, -1, -1, -1, -1, -1, 0, 1]]
 
 print(controller.population[0].model.predict(np.array([process(board)])))
 print(controller.population[0].model.predict(np.array([process(reverse(board))])))
@@ -54,10 +62,14 @@ print(controller.population[0].model.predict(np.array([process(reverse(board))])
 tree = AlphaBeta.AlphaBeta(controller)
 
 b = Board()
-b.pieces = board
+b.pieces = board2
 
-print(tree._minmax_with_alpha_beta(b, 1, 1, 0))
-print(tree._minmax_with_alpha_beta(b, -1, 1, 0))
+print(tree.alphabeta(b, 3, -math.inf, math.inf, 1, 0))
+#print(tree.alphabeta(b, 3, -math.inf, math.inf, 1, 0))
+
+
+#print(tree.alphabeta(b, 5, -math.inf, math.inf, 1, 0))
+#print(tree.alphabeta(b, 5, -math.inf, math.inf, 1, 0))
 
 
 #controller.play_two_ai(0,0)

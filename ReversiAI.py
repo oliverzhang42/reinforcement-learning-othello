@@ -14,6 +14,7 @@ from reversi import *
 import copy
 from othelloBoard import Board
 from AlphaBeta import AlphaBeta
+import math
 
 # Global Variables
 
@@ -209,10 +210,13 @@ class ReversiPlayer:
         else:
             board = Board()
             board.pieces = observation
-            value, move = decision_tree._minmax_with_alpha_beta(board, 1, self.depth, self.index)
-            #print("%.15f" % value)
-            #print(move)
-            #print("")
+            value, move = decision_tree.alphabeta(board, self.depth, -math.inf,
+                                                  math.inf, 1, self.index)
+            print("%.15f" % value)
+            print(move)
+            print("")
+            if(move == None):
+                return (-1,-1)
             return move
 
 class RandomPlayer(ReversiPlayer):
@@ -396,12 +400,3 @@ class ReversiController:
         for j in range(len(self.population)):
             self.population[j].load(self.path + "Reversi_%d_%d" %
                                     (j, episode_numbers[j]))
-
-#path = "/Users/student36/reinforcement-learning-othello/"
-path = "/home/oliver/git/othello/reinforcement-learning-othello/Weights_Folder3/"
-
-#x = ReversiController(path, True, True, 2)
-#x.population[0] = RandomPlayer()
-#x.population[1] = BasicPlayer()
-#for i in range(1):
-#    x.play_two_ai(0,1)
