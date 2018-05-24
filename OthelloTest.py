@@ -64,8 +64,8 @@ tree = AlphaBeta.AlphaBeta(controller)
 b = Board()
 b.pieces = board2
 
+print(tree.alphabeta(b, 2, -math.inf, math.inf, 1, 0))
 print(tree.alphabeta(b, 3, -math.inf, math.inf, 1, 0))
-#print(tree.alphabeta(b, 3, -math.inf, math.inf, 1, 0))
 
 
 #print(tree.alphabeta(b, 5, -math.inf, math.inf, 1, 0))

@@ -61,7 +61,7 @@ class AlphaBeta():
 
         moves = board.get_legal_moves(color)
         
-        if not isinstance(moves, list):
+        if len(moves) == 0:
             return self.policy(board, color, index), None
 
         if(color == 1):

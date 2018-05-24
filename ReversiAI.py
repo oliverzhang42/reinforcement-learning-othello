@@ -212,9 +212,9 @@ class ReversiPlayer:
             board.pieces = observation
             value, move = decision_tree.alphabeta(board, self.depth, -math.inf,
                                                   math.inf, 1, self.index)
-            print("%.15f" % value)
-            print(move)
-            print("")
+            #print("%.15f" % value)
+            #print(move)
+            #print("")
             if(move == None):
                 return (-1,-1)
             return move
