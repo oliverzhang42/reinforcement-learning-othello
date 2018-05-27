@@ -9,11 +9,11 @@ from copy import deepcopy
 import time
 import math
 
-path = "/Users/student36/reinforcement-learning-othello/Weights_Folder4/"
-#path = "/home/oliver/git/othello/reinforcement-learning-othello/Weights_Folder4/"
+#path = "/Users/student36/reinforcement-learning-othello/Weights_Folder4/"
+path = "/home/oliver/git/othello/reinforcement-learning-othello/Weights_Folder5/"
 
 controller = ReversiController(path, True, True, 2, epsilon = 10000)
-controller.load([35000, 0])
+controller.load([7000, 0])
 
 def process(array):
     new_array = []
@@ -58,6 +58,15 @@ board2 = [[-1, -1, -1, -1, -1, -1, -1, -1],
 
 board3 = [[0, -1, -1, -1, -1, -1, -1, 0],
           [-1, 0, -1, -1, 1, -1, 0, 0],
+          [-1, 1, 1, -1, -1, 1, -1, -1],
+          [-1, -1, 1, -1, -1, 1, -1, -1],
+          [0, 0, 1, 1, 1, -1, 0, 0],
+          [0, -1, 1, 1, 1, 0, -1, 0],
+          [-1, 0, 0, 0, 0, 0, 0, -1],
+          [0, 0, 0, 0, 0, 0, 0, 0]]
+
+board4 = [[0, -1, -1, -1, -1, -1, -1, 0],
+          [-1, 1, 1, 1, 1, -1, 0, 0],
           [-1, 1, 1, -1, -1, 1, -1, -1],
           [-1, -1, 1, -1, -1, 1, -1, -1],
           [0, 0, 1, 1, 1, -1, 0, 0],

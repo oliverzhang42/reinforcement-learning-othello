@@ -250,7 +250,7 @@ class RandomPlayer(ReversiPlayer):
         return random.choice(possibleMoves)
 
 class BasicPlayer(RandomPlayer):
-    def __init__(self):
+    def __init__(self, depth):
         self.weights = [[1000, 50, 100, 100, 100, 100, 50, 1000],
                    [50, -20, -10, -10, -10, -10, -20, 50],
                    [100, -10, 1, 1, 1, 1, -10, 100],
