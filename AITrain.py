@@ -3,7 +3,7 @@ from ReversiAI import ReversiController
 TOTAL_EPISODES = 10000000
 
 #path = "/Users/student36/reinforcement-learning-othello/Weights_Folder3"
-path = "/home/oliver/git/othello/reinforcement-learning-othello/Weights_Folder6/"
+path = "/home/oliver/git/othello/reinforcement-learning-othello/Weights_Folder1/"
 
 controller = ReversiController(path, False, False, population_size = 1,
                                learning_rate = 0.00003, epsilon = 2,
