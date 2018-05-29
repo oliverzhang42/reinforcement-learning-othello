@@ -6,6 +6,8 @@ import math
 import numpy as np
 from othelloBoard import Board
 from copy import deepcopy
+from reversi import reversiBoard
+import pdb
 
 path = "/Users/student36/reinforcement-learning-othello/"
 #path = "/home/oliver/git/othello/reinforcement-learning-othello/"
@@ -42,7 +44,7 @@ class AlphaBeta():
     def policy(self, board, color, index):
 #        if(color == -1):
 #            board = reverse(board)
-        processedBoard = process(board)
+        processedBoard = process(board.board)
         processedBoard = np.array([processedBoard])
         return self.controller.population[index].model.predict(processedBoard)[0][0]
 
@@ -57,46 +59,75 @@ class AlphaBeta():
 
     def alphabeta(self, board, depth, alpha, beta, color, index):
         if(depth == 0):
+            #print("Evaluated")
             return self.policy(board, color, index), None
 
-        moves = board.get_legal_moves(color)
+        moves = []
+        if(color == 1):
+            moves = board.move_generator()
+        else:
+            board.reverse()
+            moves = board.move_generator()
+            board.reverse()
         
         if len(moves) == 0:
-            return self.policy(board, color, index), None
+            newboard = reversiBoard(8)
+            newboard.reset()
+            newboard.board = deepcopy(board.board)
+            score, m = self.alphabeta(newboard, depth-1, alpha, beta, -color, index)
+                
+            return score, m
+
+        #print(moves)
 
         if(color == 1):
-            v = -math.inf
             return_move = None
 
             for move in moves:
-                newboard = deepcopy(board)
-                newboard.execute_move(move,color)
+                #print(move)
+                #print("(")
+                newboard = reversiBoard(8)
+                newboard.reset()
+                newboard.board = deepcopy(board.board)
+                newboard.MakeMove(move[0], move[1],color)
 
                 score, m = self.alphabeta(newboard, depth-1, alpha, beta, -1, index)
+                #print(score)
+                #print(")")
                 
-                if(score > v):
-                    v = score
+                if(score > alpha):
+                    alpha = score
                     return_move = move
-                alpha = max(alpha, v)
                 
                 if(beta <= alpha):
+                    #print("Cut1")
                     break
-            return v, return_move
-        else:
-            v = math.inf
+            return alpha, return_move
+        elif(color == -1):
             return_move = None
 
             for move in moves:
-                newboard = deepcopy(board)
-                newboard.execute_move(move,color)
+                #print(move)
+                #print("(")
+                newboard = reversiBoard(8)
+                newboard.reset()
+                newboard.board = deepcopy(board.board)
+                newboard.MakeMove(move[0], move[1],color)
 
                 score, m = self.alphabeta(newboard, depth - 1, alpha, beta, 1, index)
 
-                if(score < v):
-                    v = score
+                #print(")")
+                #print(score)
+
+                if(score < beta):
+                    beta = score
                     return_move = move
-                beta = min(beta, v)
 
                 if(beta <= alpha):
+                    #print("Cut2")
                     break
-            return v, return_move
+            return beta, return_move
+        else:
+            print("Error in AlphaBeta, Color is not 1 or -1")
+            print("Color is: " + color)
+            raise(Exception("Color Error in Alpha Beta"))

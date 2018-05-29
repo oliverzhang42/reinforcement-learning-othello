@@ -74,21 +74,64 @@ board4 = [[0, -1, -1, -1, -1, -1, -1, 0],
           [-1, 0, 0, 0, 0, 0, 0, -1],
           [0, 0, 0, 0, 0, 0, 0, 0]]
 
-print(controller.population[0].model.predict(np.array([process(board)])))
-print(controller.population[0].model.predict(np.array([process(reverse(board))])))
+board5 = [[0, -1, -1, -1, -1, -1, 0, 0],
+          [-1, 0, -1, 1, 1, -1, 0, 0],
+          [-1, -1, 1, 1, 1, -1, -1, -1],
+          [-1, 1, -1, -1, 1, -1, -1, -1],
+          [-1, 1, -1, -1, 1, -1, -1, -1],
+          [-1, -1, -1, -1, 1, 1, -1, -1],
+          [-1, 0, -1, 1, 1, 1, 0, -1],
+          [0, 0, 1, 1, 0, 0, 0, 0]]
+
+board6 = [[0, -1, -1, -1, -1, -1, 0, 0],
+          [-1, 1, 1, 1, 1, -1, 0, 0],
+          [-1, 1, 1, 1, 1, -1, -1, -1],
+          [-1, 1, -1, -1, 1, -1, -1, -1],
+          [-1, 1, -1, -1, 1, -1, -1, -1],
+          [-1, -1, -1, -1, 1, 1, -1, -1],
+          [-1, 0, -1, 1, 1, 1, 0, -1],
+          [0, 0, 1, 1, 0, 0, 0, 0]]
+
+board7 = [[-1, -1, -1, -1, -1, -1, 0, 0],
+          [-1, -1, 1, 1, 1, -1, 0, 0],
+          [-1, 1, -1, 1, 1, -1, -1, -1],
+          [-1, 1, -1, -1, 1, -1, -1, -1],
+          [-1, 1, -1, -1, 1, -1, -1, -1],
+          [-1, -1, -1, -1, 1, 1, -1, -1],
+          [-1, 0, -1, 1, 1, 1, 0, -1],
+          [0, 0, 1, 1, 0, 0, 0, 0]]
+
+board8 = [[0, -1, -1, -1, -1, -1, 1, 0],
+          [-1, 0, -1, 1, 1, 1, 0, 0],
+          [-1, -1, 1, 1, 1, -1, -1, -1],
+          [-1, 1, -1, -1, 1, -1, -1, -1],
+          [-1, 1, -1, -1, 1, -1, -1, -1],
+          [-1, -1, -1, -1, 1, 1, -1, -1],
+          [-1, 0, -1, 1, 1, 1, 0, -1],
+          [0, 0, 1, 1, 0, 0, 0, 0]]
+
+board9 = [[0, 0, 0, 0, 0, 0, 0, 0],
+          [0, -1, 0, 0, 0, 0, 0, 0],
+          [0, 1, -1, 1, 0, 0, 0, 0],
+          [0, 0, 0, -1, 1, 0, 0, 0],
+          [0, 0, 0, 1, -1, 0, 0, 0],
+          [0, 0, 0, 0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0, 0, 0, 0]]
+
+#print(controller.population[0].model.predict(np.array([process(board)])))
+#print(controller.population[0].model.predict(np.array([process(reverse(board))])))
 
 tree = AlphaBeta.AlphaBeta(controller)
 
-b = Board()
-b.pieces = board3
+b = reversiBoard(8)
+b.board = board5
 
-print(tree.alphabeta(b, 2, -math.inf, math.inf, 1, 0))
-print(tree.alphabeta(b, 3, -math.inf, math.inf, 1, 0))
-print(tree.alphabeta(b, 4, -math.inf, math.inf, 1, 0))
+b1 = reversiBoard(8)
+b1.board = board7
 
+b3 = reversiBoard(8)
+b3.board = board8
 
-#print(tree.alphabeta(b, 5, -math.inf, math.inf, 1, 0))
-#print(tree.alphabeta(b, 5, -math.inf, math.inf, 1, 0))
+print(controller.population[0].model.predict(np.array([process(board9)])))
 
-
-#controller.play_two_ai(0,0)

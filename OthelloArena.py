@@ -21,12 +21,9 @@ mc.setBoard(env.board)
 
 #path = "/Users/student36/reinforcement-learning-othello/Weights_Folder4/"
 path = "/home/oliver/git/othello/reinforcement-learning-othello/Weights_Folder5/"
-
 controller = ReversiController(path, True, True, 2, epsilon = 10000)
 controller.load([7000, 7000])
 #controller.population[1] = BasicPlayer()
-
-
 
 #print(controller.population)
 
@@ -34,8 +31,9 @@ controller.load([7000, 7000])
 
 def fight(controller, index1, index2, toPlay):
     global mc
+    global env
 
-    observation = copy.deepcopy(controller.env.board)
+    observation = copy.deepcopy(env.board)
 
     player = [controller.population[index1], controller.population[index2]]
 
@@ -48,7 +46,7 @@ def fight(controller, index1, index2, toPlay):
     
     print(str(toPlay) + ", " + str(move))
     
-    observation, reward, done, info = controller.env.step(move)
+    observation, reward, done, info = env.step(move)
 
     mc.setBoard(observation)
 
