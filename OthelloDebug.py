@@ -9,11 +9,11 @@ from copy import deepcopy
 import time
 
 #path = "/Users/student36/reinforcement-learning-othello/Weights_Folder5/"
-path = "/home/oliver/git/othello/reinforcement-learning-othello/Weights_Folder5/"
+path = "/home/oliver/git/othello/reinforcement-learning-othello/Weights_Folder2/"
 
 controller = ReversiController(path, False, False, 2, epsilon = 10000)
-controller.load([7000, 0])
-controller.population[1] = BasicPlayer()
+controller.load([1400, 0])
+controller.population[1] = RandomPlayer()
 controller.population[0].depth = 3
 #controller.population[1].depth = 3
 

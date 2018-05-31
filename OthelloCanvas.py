@@ -20,10 +20,10 @@ mc.setBoard(env.board)
 
 
 #path = "/Users/student36/reinforcement-learning-othello/Weights_Folder4/"
-path = "/home/oliver/git/othello/reinforcement-learning-othello/Weights_Folder5/"
+path = "/home/oliver/git/othello/reinforcement-learning-othello/Weights_Folder2/"
 
 controller = ReversiController(path, True, True, 1, epsilon = 10000)
-controller.load([7000])
+controller.load([1400])
 
 controller.population[0].depth = 3
 
