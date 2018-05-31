@@ -10,10 +10,10 @@ import time
 import math
 
 #path = "/Users/student36/reinforcement-learning-othello/Weights_Folder4/"
-path = "/home/oliver/git/othello/reinforcement-learning-othello/Weights_Folder5/"
+path = "/home/oliver/git/othello/reinforcement-learning-othello/Weights_Folder2/"
 
 controller = ReversiController(path, True, True, 2, epsilon = 10000)
-controller.load([7000, 0])
+controller.load([1400, 1400])
 
 def process(array):
     new_array = []
@@ -119,19 +119,42 @@ board9 = [[0, 0, 0, 0, 0, 0, 0, 0],
           [0, 0, 0, 0, 0, 0, 0, 0],
           [0, 0, 0, 0, 0, 0, 0, 0]]
 
+board10 = [[0, 0, 0, 1, 0, 0, 0, 0],
+           [0, 0, 0, 0, 1, 0, 0, 0],
+           [0, 0, 0, 0, 0, 1, 0, 0],
+           [0, -1,0,-1, 1, 1, 1, 0],
+           [-1,-1,-1,-1,-1,-1,-1,1],
+           [1, 1, -1,-1,-1,-1,-1,0],
+           [0, 0, 1,-1, 0, -1, 0, 0],
+           [0, 0, 0, 0,-1, 0,-1, 0]]
+
+board11 = [[0, 0, 0, 1, 0, 0, 0, 0],
+           [0, 0, 0, 0, 1, 0, 0, 0],
+           [0, 0, 0, 0, 0, 1, 0, 0],
+           [0, -1,0,-1, 1, 1, 1, 0],
+           [-1,-1,-1,-1,-1,1,-1,1],
+           [1, 1, -1,-1,-1,1,-1,0],
+           [0, 0, 1,-1, 0, 1, 0, 0],
+           [0, 0, 0, 0,-1, 1, 1, 1]]
+
 #print(controller.population[0].model.predict(np.array([process(board)])))
 #print(controller.population[0].model.predict(np.array([process(reverse(board))])))
 
 tree = AlphaBeta.AlphaBeta(controller)
 
-b = reversiBoard(8)
-b.board = board5
+#b = reversiBoard(8)
+#b.board = board5
 
-b1 = reversiBoard(8)
-b1.board = board7
+#b1 = reversiBoard(8)
+#b1.board = board7
 
-b3 = reversiBoard(8)
-b3.board = board8
+#b3 = reversiBoard(8)
+#b3.board = board8
 
-print(controller.population[0].model.predict(np.array([process(board9)])))
+b4 = reversiBoard(8)
+b4.board = board10
+
+print(tree.alphabeta(b4, 3, -math.inf, math.inf, 1, 0))
+
+print(controller.population[0].model.predict(np.array([process(board11)])))
 

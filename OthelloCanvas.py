@@ -51,14 +51,14 @@ def makeMove(event):
             print("Done!!!")
         else:
             mc.setBoard(observation)
-            
-            time.sleep(1)
+            mc.update() 
             
             move = controller.population[0].policy(observation, -1)
             
             observation, reward, done, info = env.step(move)
 
             mc.setBoard(env.board)
+            mc.after(2000, mc.update())
     else:
        print("That Move cannot be made, make another one.")
        #print(env.board)
