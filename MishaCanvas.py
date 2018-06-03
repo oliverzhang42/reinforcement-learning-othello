@@ -9,7 +9,7 @@ class BasicMishaCanvas(Canvas):
         self.width = self.cellsize * cols
         self.height = self.cellsize * rows
         Canvas.__init__(self, master, width = self.width, height = self.height,
-                        borderwidth=0, background='white')
+                        borderwidth=0, background='sea green')
         self.pack()
         #  Create the 2D array of rectangles--white to start with
         self.rects = self.makeRectangles()
@@ -22,7 +22,7 @@ class BasicMishaCanvas(Canvas):
                 yleft = c  * self.cellsize
                 returnme[r][c] = self.create_rectangle(yleft, xup, yleft + self.cellsize,
                          xup + self.cellsize,
-                         fill = "white")
+                         fill = "sea green")
         return returnme
      
     def fillPoint(self, x, y):
@@ -32,7 +32,7 @@ class BasicMishaCanvas(Canvas):
         self.itemconfig(self.rects[x][y], fill = color)
  
     def erasePoint(self, x, y):
-        self.itemconfig(self.rects[x][y], fill = "white")
+        self.itemconfig(self.rects[x][y], fill = "sea green")
  
     def isFilled(self, x, y):
         if self.itemcget(self.rects[x][y],"fill") == "black":
@@ -45,9 +45,9 @@ class BasicMishaCanvas(Canvas):
                 if(board[i][j] == 0):
                     self.erasePoint(i,j)
                 elif(board[i][j] == 1):
-                    self.colorPoint(i,j, "blue")
+                    self.colorPoint(i,j, "black")
                 else:
-                    self.colorPoint(i,j, "red")
+                    self.colorPoint(i,j, "white")
  
     def isValid(self, x, y):
         if 0 <= x and x < self.rows and 0 <= y and y < self.cols:

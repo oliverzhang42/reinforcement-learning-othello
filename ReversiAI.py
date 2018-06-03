@@ -40,7 +40,7 @@ BOARD_SIZE = 8
 # Here, REWARD_DECAY is how much we care about the delayed reward compared to
 # the immediate reward. REWARD_DECAY = 1 means we care about all reward the
 # same, REWARD_DECAY = 0 means we don't care at all about the later rewards.
-REWARD_DECAY = 0.95
+REWARD_DECAY = 0.99
 
 BATCH_SIZE = 64
 
@@ -431,20 +431,20 @@ class ReversiController:
             #One Round Robin Tournament
             for j in range(len(self.population) - 1): #The minus 1 is there for the randomPlayer
                 for k in range(len(self.population) - 1):
-                    self.play_two_ai(j,k)
-##                    thread_array = []
-##                    for l in range(THREAD_NUM):
-##                        t = Thread(target = self.play_two_ai_training,
-##                                   args = (j,k, True))
-##                        t.start()
-##                        thread_array.append(t)
-##
-##                    for t in thread_array:
-##                        t.join()
+#                    self.play_two_ai(j,k)
+                    thread_array = []
+                    for l in range(THREAD_NUM):
+                        t = Thread(target = self.play_two_ai_training,
+                                   args = (j,k, True))
+                        t.start()
+                        thread_array.append(t)
+
+                    for t in thread_array:
+                        t.join()
 
             #Everyone Trains
             for j in range(len(self.population) - 1):
-                for k in range(1):#THREAD_NUM):
+                for k in range(THREAD_NUM):
                     self.population[j].train_model(self.debugging)
 
             if(i % SAVE_FREQUENCY == 0):
