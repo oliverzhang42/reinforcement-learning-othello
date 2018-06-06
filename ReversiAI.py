@@ -245,9 +245,9 @@ class ReversiPlayer:
             board.board = observation
             value, move = decision_tree.alphabeta(board, self.depth, -math.inf,
                                                   math.inf, 1, self.index)
-            #print("%.15f" % value)
-            #print(move)
-            #rint("")
+#            print("%.15f" % value)
+#            print(move)#
+#            print("")
             if(move == None):
                 return (-1,-1)
             return move
@@ -431,20 +431,20 @@ class ReversiController:
             #One Round Robin Tournament
             for j in range(len(self.population) - 1): #The minus 1 is there for the randomPlayer
                 for k in range(len(self.population) - 1):
-#                    self.play_two_ai(j,k)
-                    thread_array = []
-                    for l in range(THREAD_NUM):
-                        t = Thread(target = self.play_two_ai_training,
-                                   args = (j,k, True))
-                        t.start()
-                        thread_array.append(t)
-
-                    for t in thread_array:
-                        t.join()
+                    self.play_two_ai(j,k)
+#                    thread_array = []
+#                    for l in range(THREAD_NUM):
+#                        t = Thread(target = self.play_two_ai_training,
+#                                   args = (j,k, True))
+#                        t.start()
+#                        thread_array.append(t)
+#
+#                    for t in thread_array:
+#                        t.join()
 
             #Everyone Trains
             for j in range(len(self.population) - 1):
-                for k in range(THREAD_NUM):
+                for k in range(1):#THREAD_NUM):
                     self.population[j].train_model(self.debugging)
 
             if(i % SAVE_FREQUENCY == 0):
@@ -457,10 +457,10 @@ class ReversiController:
         
     def save(self, episode_numbers):
         for j in range(len(self.population) - 1):
-            self.population[j].save(self.path + "Reversi_%d_%d" %
-                                    (j, episode_numbers[j]))
+            self.population[j].save(self.path + "Reversi_%d" %
+                                    (episode_numbers[j]))
 
     def load(self, episode_numbers):
         for j in range(len(self.population) - 1):
-            self.population[j].load(self.path + "Reversi_%d_%d" %
-                                    (j, episode_numbers[j]))
+            self.population[j].load(self.path + "Reversi_%d" %
+                                    (episode_numbers[j]))
