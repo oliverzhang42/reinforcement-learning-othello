@@ -5,7 +5,7 @@
 # Importing Stuff
 import keras
 from keras.layers import BatchNormalization, Dense, Activation, Conv2D, Flatten
-from keras.layers import Input
+from keras.layers import Input, Add
 from keras.optimizers import Adam
 import random
 import h5py
@@ -118,15 +118,25 @@ class ReversiPlayer:
     def create_model(self):
         main_input = Input(shape = (3,8,8))
 
-        c1 = Conv2D(64, (3,3), activation = 'relu', padding = 'same')(main_input)
+        c1 = Conv2D(256, (3,3), activation = 'relu', padding = 'same')(main_input)
         b1 = BatchNormalization()(c1)
-        c2 = Conv2D(64, (3,3), activation = 'relu', padding = 'same')(b1)
+        c2 = Conv2D(256, (3,3), activation = 'relu', padding = 'same')(b1)
         b2 = BatchNormalization()(c2)
-        c3 = Conv2D(128, (3,3), activation = 'relu', padding = 'same')(b2)
+        c3 = Conv2D(256, (3,3), activation = 'relu', padding = 'same')(b2)
         b3 = BatchNormalization()(c3)
-        c4 = Conv2D(128, (3,3), activation = 'relu', padding = 'same')(b3)
+
+        a3 = Add(b3, b1)
+
+        c4 = Conv2D(256, (3,3), activation = 'relu', padding = 'same')(a3)
         b4 = BatchNormalization()(c4)
-        f1 = Flatten()(b4)
+        c5 = Conv2D(256, (3,3), activation = 'relu', padding = 'same')(b4)
+        b5 = BatchNormalization()(c5)
+
+        a5 = Add(b5, a3)
+
+        b6 = Conv2D(256, (3,3), activation = 'relu', padding = 'same')(a5)
+        
+        f1 = Flatten()(b6)
         d1 = Dense(256, activation = 'relu')(f1)
         d2 = Dense(1, activation = 'tanh')(d1)
 
