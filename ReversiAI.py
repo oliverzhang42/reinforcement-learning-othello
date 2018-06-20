@@ -125,14 +125,14 @@ class ReversiPlayer:
         c3 = Conv2D(256, (3,3), activation = 'relu', padding = 'same')(b2)
         b3 = BatchNormalization()(c3)
 
-        a3 = Add(b3, b1)
+        a3 = Add()([b3, b1])
 
         c4 = Conv2D(256, (3,3), activation = 'relu', padding = 'same')(a3)
         b4 = BatchNormalization()(c4)
         c5 = Conv2D(256, (3,3), activation = 'relu', padding = 'same')(b4)
         b5 = BatchNormalization()(c5)
 
-        a5 = Add(b5, a3)
+        a5 = Add()([b5, a3])
 
         b6 = Conv2D(256, (3,3), activation = 'relu', padding = 'same')(a5)
         
@@ -354,7 +354,7 @@ class ReversiController:
 
         if(training):
             switch = random.randint(0, 58)
-            #print("Switch: " + str(switch))
+#            print("Switch: " + str(switch))
 
         # Random Player Index
         rpi = len(self.population) - 1
@@ -451,10 +451,9 @@ class ReversiController:
 #
 #                    for t in thread_array:
 #                        t.join()
-
             #Everyone Trains
             for j in range(len(self.population) - 1):
-                for k in range(1):#THREAD_NUM):
+                for k in range(1):#2*THREAD_NUM):
                     self.population[j].train_model(self.debugging)
 
             if(i % SAVE_FREQUENCY == 0):
