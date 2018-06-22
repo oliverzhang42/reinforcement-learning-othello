@@ -5,7 +5,6 @@ from OthelloBoard import *
 import copy
 from OthelloBoard import OthelloBoard
 from threading import Thread
-from keras import backend as K
 from OthelloPlayer import reverse, OthelloPlayer, RandomPlayer, BasicPlayer
 
 # Global Variables
@@ -110,10 +109,7 @@ class OthelloController:
                 return reward
         return reward
         
-    def main(self, starting_episode, total_episodes, thread_num, save_frequency,
-             random_multithreading = False):
-        # For some reason, I need this when multithreading ... Not sure why ...
-        K.get_session()
+    def main(self, starting_episode, total_episodes, save_frequency):
         
         for player in self.population:
             player.depth = 1
@@ -123,26 +119,11 @@ class OthelloController:
             #One Round Robin Tournament
             for j in range(len(self.population) - 1): #The minus 1 is there for the randomPlayer
                 for k in range(len(self.population) - 1):
-                    if(random_multithreading):
-                        thread_array = []
-                        for l in range(thread_num):
-                            t = Thread(target = self.play_two_ai_training,
-                                       args = (j,k, True))
-                            t.start()
-                            thread_array.append(t)
-
-                        for t in thread_array:
-                            t.join()
-                    else:
-                        self.play_two_ai(j,k)
+                    self.play_two_ai(j,k)
                     
             #Everyone Trains
             for j in range(len(self.population) - 1):
-                if(random_multithreading):
-                    for k in range(2*thread_num):
-                        self.population[j].train_model(self.debugging)
-                else:
-                    self.population[j].train_model(self.debugging)
+                self.population[j].train_model(self.debugging)
 
             if(i % save_frequency == 0):
                 print(i)

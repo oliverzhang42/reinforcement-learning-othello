@@ -40,7 +40,7 @@ def main(argv):
         if(FLAGS.load_weight[0] != -1):
             controller.load([int(FLAGS.load_weight[0])])
         
-        controller.main(int(FLAGS.load_weight[0]), FLAGS.total_episodes, 1, FLAGS.save_frequency)
+        controller.main(int(FLAGS.load_weight[0]), FLAGS.total_episodes, FLAGS.save_frequency)
         
     elif FLAGS.mode == 'h':
         session = OthelloSession(FLAGS.path)

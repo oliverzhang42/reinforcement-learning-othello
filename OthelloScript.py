@@ -31,7 +31,7 @@ def main(argv):
         if(WEIGHTS[0] != -1):
             controller.load([WEIGHTS[0]])
         
-        controller.main(WEIGHTS[0], TOTAL_EPISODES, 1, SAVE_FREQUENCY)
+        controller.main(WEIGHTS[0], TOTAL_EPISODES, SAVE_FREQUENCY)
         
     elif MODE == 'h':
         session = OthelloSession(PATH)

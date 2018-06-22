@@ -10,7 +10,6 @@ from OthelloBoard import *
 import copy
 from AlphaBeta import AlphaBeta
 import math
-import tensorflow as tf
 
 # How many neurons for each layer
 LAYER_SIZE = 256
@@ -80,13 +79,7 @@ class OthelloPlayer:
         self.index = index
         self.depth = depth
 
-        self.session = tf.Session()
-        K.set_session(self.session)
-
         self.create_model()
-        
-        self.model._make_predict_function()
-        self.default_graph = tf.get_default_graph()
 
     def create_model(self):
         main_input = Input(shape = (3,8,8))
