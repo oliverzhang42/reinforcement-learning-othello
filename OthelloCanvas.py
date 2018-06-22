@@ -1,81 +1,61 @@
-from MishaCanvas import *
+# Dedicated to our classmate Misha who came up with this canvas
+
 from tkinter import *
-from reversi import reversiBoard
-from ReversiAI import *
-import AlphaBeta
-import time
-from othelloBoard import Board
-from copy import deepcopy
-import time
+ 
+class BasicOthelloCanvas(Canvas):
+ 
+    def __init__(self, master, rows, cols, cellsize = 10):
+        self.rows = rows
+        self.cols = cols
+        self.cellsize = cellsize
+        self.width = self.cellsize * cols
+        self.height = self.cellsize * rows
+        Canvas.__init__(self, master, width = self.width, height = self.height,
+                        borderwidth=0, background='sea green')
+        self.pack()
+        #  Create the 2D array of rectangles--white to start with
+        self.rects = self.makeRectangles()
+ 
+    def makeRectangles(self):
+        returnme = [[0 for x in range(self.cols)] for y in range(self.rows)]
+        for r in range(self.rows):
+            for c in range(self.cols):
+                xup = r  * self.cellsize
+                yleft = c  * self.cellsize
+                returnme[r][c] = self.create_rectangle(yleft, xup, yleft + self.cellsize,
+                         xup + self.cellsize,
+                         fill = "sea green")
+        return returnme
+     
+    def fillPoint(self, x, y):
+        self.itemconfig(self.rects[x][y], fill = "black")
 
-root = Tk()
-# Grid is 8x8, cell size 100 pixels, white to start with
-#  It will pack itself into the root
-mc = BasicMishaCanvas(root, 8, 8, cellsize = 100)
+    def colorPoint(self, x, y, color):
+        self.itemconfig(self.rects[x][y], fill = color)
+ 
+    def erasePoint(self, x, y):
+        self.itemconfig(self.rects[x][y], fill = "sea green")
+ 
+    def isFilled(self, x, y):
+        if self.itemcget(self.rects[x][y],"fill") == "black":
+            return True
+        return False
 
-env = reversiBoard(8)
-env.reset()
-mc.setBoard(env.board)
-
-
-
-#path = "/Users/student36/reinforcement-learning-othello/Weights_Folder4/"
-path = "/home/oliver/git/othello/reinforcement-learning-othello/Weights_Folder1/"
-
-controller = ReversiController(path, True, True, 1, epsilon = 10000)
-controller.load([53800])
-
-controller.population[0].depth = 3
-
-def reverse(board):
-    d = {1: -1, 0:0, -1:1}
-
-    newboard = [[0 for i in range(8)] for j in range(8)]
-    
-    for i in range(8):
-        for j in range(8):
-            newboard[i][j] = d[newboard[i][j]]
-
-    return newboard
-
-# Bind a function to a click to the canvas
-def makeMove(event):
-    global env
-    global controller
-    x, y = mc.cell_coords(event.x, event.y)
-
-    if(env.ValidMove(x,y,1)):
-        observation, reward, done, info = env.step([x,y])
-
-        if(done):
-            print("Done!!!")
-        else:
-            mc.setBoard(observation)
-            mc.update() 
-            
-            move = controller.population[0].policy(observation, -1)
-            
-            observation, reward, done, info = env.step(move)
-
-            mc.setBoard(env.board)
-            mc.after(2000, mc.update())
-    else:
-       print("That Move cannot be made, make another one.")
-       #print(env.board)
-
-def passMove(event):
-    global env
-    global controller
-    observation, reward, done, info = env.step([-1,-1])
-
-    if(done):
-        print("Done!!!")
-    else:
-        move = controller.population[0].policy(observation, -1)
-
-        observation, reward, done, info = env.step(move)
-
-        mc.setBoard(observation)
-
-mc.bind("<Button-1>", makeMove)
-mc.bind("<Button-2>", passMove)
+    def setBoard(self, board):
+        for i in range(len(board)):
+            for j in range(len(board)):
+                if(board[i][j] == 0):
+                    self.erasePoint(i,j)
+                elif(board[i][j] == 1):
+                    self.colorPoint(i,j, "black")
+                else:
+                    self.colorPoint(i,j, "white")
+ 
+    def isValid(self, x, y):
+        if 0 <= x and x < self.rows and 0 <= y and y < self.cols:
+            return True
+        return False
+ 
+    def cell_coords(self, mousex, mousey):
+        # Reversed, to change from canvas coordinates to 2D array coordinates
+        return (mousey//self.cellsize, mousex//self.cellsize)

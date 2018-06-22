@@ -2,10 +2,9 @@
 
 import os, copy
 
-class reversiBoard():
+class OthelloBoard():
     pass_counter = 0
     
-    # 8 directions
     dirx = [-1, 0, 1, -1, 1, -1, 0, 1]
     diry = [-1, -1, -1, 0, 0, 1, 1, 1]
 
@@ -183,7 +182,6 @@ class reversiBoard():
             return [], reward, done, {}
         else:
             # Always make a move like its the first person playing
-            #print("to_play: {} ({},{})".format(self.to_play, x, y))
             self.pass_counter = 0
             self.MakeMove(x,y,self.to_play)
             self.to_play *= -1
@@ -191,39 +189,7 @@ class reversiBoard():
 
 #@Static Function
 def findMovesWithoutEnv(board):
-    env = reversiBoard(8)
+    env = OthelloBoard(8)
     env.board = board
     env.to_play = 1
     return env.move_generator()
-
-
-#env = reversiBoard(8)
-#for i in range(64):
-#   env.render()
-#   row = int(input("Player 1 Row?"))
-#   col = int(input("Player 1 Col?"))
-#
-#   action = (row, col)
-#
-#   observation, reward, done, info = env.step(action)
-#   env.render()
-#
-#   board = copy.deepcopy(observation)
-#
-#   if(done):
-#      print("End of Game")
-#      break
-#
-#   # Chose a move and take it
-#
-#   row = int(input("Player 2 Row?"))
-#   col = int(input("Player 2 Col?"))
-#
-#   observation, reward, done, info = env.step((row, col))
-#   
-#   env.render()
-#
-#   if(done):
-#      print("End of Game")
-#      break
-

@@ -1,65 +1,62 @@
-from MishaCanvas import *
+from OthelloCanvas import *
 from tkinter import *
-from reversi import reversiBoard
-from ReversiAI import *
+from OthelloBoard import OthelloBoard
+from OthelloController import *
 import AlphaBeta
 import time
-from othelloBoard import Board
 from copy import deepcopy
 import time
+import absl
 
 
+class Arena(object):
+    def __init__(self, path):
+        self.root = Tk()
+        self.mc = BasicOthelloCanvas(self.root, 8, 8, cellsize = 100)
+        
+        self.env = OthelloBoard(8)
+        self.env.reset()
+        self.mc.setBoard(self.env.board)
+        
+        self.controller = OthelloController(path, 2, epsilon = 10000)
+        self.playing = True
 
-root = Tk()
-# Grid is 8x8, cell size 100 pixels, white to start with
-#  It will pack itself into the root
-mc = BasicMishaCanvas(root, 8, 8, cellsize = 100)
-
-env = reversiBoard(8)
-env.reset()
-mc.setBoard(env.board)
-
-#path = "/Users/student36/reinforcement-learning-othello/Weights_Folder4/"
-path = "/home/oliver/git/othello/reinforcement-learning-othello/Weights_Folder9/"
-controller = ReversiController(path, True, True, 2, epsilon = 10000)
-controller.load([1200, 1200])
-#controller.population[1] = BasicPlayer()
-
-#print(controller.population)
-
-#controller.population[1] = RandomPlayer()
-
-def fight(controller, index1, index2, toPlay):
-    global mc
-    global env
-
-    observation = copy.deepcopy(env.board)
-
-    player = [controller.population[index1], controller.population[index2]]
-
-    d = {1: 0, -1: 1}
-    e = {0: 1, 1: -1}
-
-    # Chose a move and take it
-
-    move = player[d[toPlay]].policy(observation, toPlay)
+    def move(self, index1, index2, toPlay):
+        observation = copy.deepcopy(self.env.board)
+        
+        players = [self.controller.population[index1], self.controller.population[index2]]
+        
+        d = {1: 0, -1: 1}
+        e = {0: 1, 1: -1}
+        
+        # Chose a move and take it
+        
+        move = players[d[toPlay]].policy(observation, toPlay)
+            
+        observation, reward, done, info = self.env.step(move)
+        
+        self.mc.setBoard(observation)
     
-    print(str(toPlay) + ", " + str(move))
-    
-    observation, reward, done, info = env.step(move)
+    def play(self, load_weights1, load_weights2):
+        self.controller.load([load_weights1, load_weights2])
+        moving = True
+        
+        self.mc.focus_set()
+        
+        while(True):
+            t1 = time.time()
+            self.move(0, 1, 1)
+            t2 = time.time()
 
-    mc.setBoard(observation)
-
-def move1(event):
-    print("Move One!")
-    global controller
-    fight(controller, 0, 1, 1)
-
-def move2(event):
-    print("Move Two!")
-    global controller
-    fight(controller, 0, 1, -1)
-
-mc.bind("<Left>", move1)
-mc.bind("<Right>", move2)
-mc.focus_set()
+            time.sleep(max(2-t2+t1, 0))
+            self.mc.update()
+            self.mc.update_idletasks()
+            t1 = time.time()
+            self.move(0, 1, -1)
+            t2 = time.time()
+            
+            time.sleep(max(2-t2+t1, 0))
+            self.mc.update()
+            self.mc.update_idletasks()
+            
+            

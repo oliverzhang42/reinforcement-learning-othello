@@ -1,16 +1,7 @@
-#This is Alpha Beta Pruning for Othello, using
-#https://github.com/hylbyj/Alpha-Beta-Pruning-for-Othello-Game/blob/master/othello.py
-#ply is the depth
-
 import math
 import numpy as np
-from othelloBoard import Board
+from OthelloBoard import OthelloBoard
 from copy import deepcopy
-from reversi import reversiBoard
-import pdb
-
-path = "/Users/student36/reinforcement-learning-othello/"
-#path = "/home/oliver/git/othello/reinforcement-learning-othello/"
 
 def process(array):
     new_array = []
@@ -42,24 +33,12 @@ class AlphaBeta():
         self.controller = controller
     
     def policy(self, board, color, index):
-#        if(color == -1):
-#            board = reverse(board)
         processedBoard = process(board.board)
         processedBoard = np.array([processedBoard])
         return self.controller.population[index].model.predict(processedBoard)[0][0]
 
-### This assumes passing is the end. In reality, passing gives an extra move
-### to a player. I'll need to revise this
-# Notes:
-#
-# First, the policy assumes color == 1. Just don't change it... (don't inclue
-# the color == -1, board = reverse(board)
-#
-# Second, when first calling it, do color = 1!!!
-
     def alphabeta(self, board, depth, alpha, beta, color, index):
         if(depth == 0):
-            #print("Evaluated")
             return self.policy(board, color, index), None
 
         moves = []
@@ -71,60 +50,47 @@ class AlphaBeta():
             board.reverse()
         
         if len(moves) == 0:
-            newboard = reversiBoard(8)
+            newboard = OthelloBoard(8)
             newboard.reset()
             newboard.board = deepcopy(board.board)
             score, m = self.alphabeta(newboard, depth-1, alpha, beta, -color, index)
                 
             return score, m
 
-        #print(moves)
-
         if(color == 1):
             return_move = None
 
             for move in moves:
-                #print(move)
-                #print("(")
-                newboard = reversiBoard(8)
+                newboard = OthelloBoard(8)
                 newboard.reset()
                 newboard.board = deepcopy(board.board)
                 newboard.MakeMove(move[0], move[1],color)
 
                 score, m = self.alphabeta(newboard, depth-1, alpha, beta, -1, index)
-                #print(score)
-                #print(")")
                 
                 if(score > alpha):
                     alpha = score
                     return_move = move
                 
                 if(beta <= alpha):
-                    #print("Cut1")
                     break
             return alpha, return_move
         elif(color == -1):
             return_move = None
 
             for move in moves:
-                #print(move)
-                #print("(")
-                newboard = reversiBoard(8)
+                newboard = OthelloBoard(8)
                 newboard.reset()
                 newboard.board = deepcopy(board.board)
                 newboard.MakeMove(move[0], move[1],color)
 
                 score, m = self.alphabeta(newboard, depth - 1, alpha, beta, 1, index)
 
-                #print(")")
-                #print(score)
-
                 if(score < beta):
                     beta = score
                     return_move = move
 
                 if(beta <= alpha):
-                    #print("Cut2")
                     break
             return beta, return_move
         else:

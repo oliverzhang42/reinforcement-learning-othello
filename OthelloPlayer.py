@@ -1,54 +1,27 @@
-# So I'm switching my structure and Dividing the Reversi Class into two classes:
-# ReversiPlayer will be a single AI.
-# ReversiController will be a framework for the AI to exist in.
-
-# Importing Stuff
 import keras
 from keras.layers import BatchNormalization, Dense, Activation, Conv2D, Flatten
 from keras.layers import Input, Add
 from keras.optimizers import Adam
+from keras import backend as K
 import random
-import h5py
 import time
 import numpy as np
-from reversi import * 
+from OthelloBoard import * 
 import copy
-from othelloBoard import Board
 from AlphaBeta import AlphaBeta
 import math
-from threading import Thread
-from keras import backend as K
 import tensorflow as tf
 
-# Global Variables
-
-# After Every SAVE_FREQUENCY episodes, we save the weights of the model in path.
-SAVE_FREQUENCY = 50
-
-# After Every WIPE_FREQUENCY episodes, we wipe the history of the two players.
-WIPE_FREQUENCY = 2
-
-# The number of total episodes to run.
-TOTAL_EPISODES = 23000
-
-# The size of each layer in the model. Currently Unused
-LAYER_SIZE = 30
-
-# The size of the othello board. (BOARD_SIZE by BOARD_SIZE)
-BOARD_SIZE = 8
+# How many neurons for each layer
+LAYER_SIZE = 256
 
 # Here, REWARD_DECAY is how much we care about the delayed reward compared to
 # the immediate reward. REWARD_DECAY = 1 means we care about all reward the
 # same, REWARD_DECAY = 0 means we don't care at all about the later rewards.
 REWARD_DECAY = 0.99
 
+# Size of the mini-batches used in training
 BATCH_SIZE = 64
-
-# Episodes before switching which model to train
-EPISODES_BEFORE_SWITCH = 200
-
-# Number of threads you want to run
-THREAD_NUM = 8
 
 def reverse(array):
     newarray = copy.deepcopy(array)
@@ -95,7 +68,7 @@ def rotate_90(array):
 
     return new_array
 
-class ReversiPlayer:
+class OthelloPlayer:
     def __init__(self, index, depth, parent = None, learning_rate = 0.00005, epsilon = 2,
                  epsilon_increment = 0.00005, debugging = False):
         self.learning_rate = learning_rate
@@ -118,48 +91,31 @@ class ReversiPlayer:
     def create_model(self):
         main_input = Input(shape = (3,8,8))
 
-        c1 = Conv2D(256, (3,3), activation = 'relu', padding = 'same')(main_input)
+        c1 = Conv2D(LAYER_SIZE, (3,3), activation = 'relu', padding = 'same')(main_input)
         b1 = BatchNormalization()(c1)
-        c2 = Conv2D(256, (3,3), activation = 'relu', padding = 'same')(b1)
+        c2 = Conv2D(LAYER_SIZE, (3,3), activation = 'relu', padding = 'same')(b1)
         b2 = BatchNormalization()(c2)
-        c3 = Conv2D(256, (3,3), activation = 'relu', padding = 'same')(b2)
+        c3 = Conv2D(LAYER_SIZE, (3,3), activation = 'relu', padding = 'same')(b2)
         b3 = BatchNormalization()(c3)
 
         a3 = Add()([b3, b1])
 
-        c4 = Conv2D(256, (3,3), activation = 'relu', padding = 'same')(a3)
+        c4 = Conv2D(LAYER_SIZE, (3,3), activation = 'relu', padding = 'same')(a3)
         b4 = BatchNormalization()(c4)
-        c5 = Conv2D(256, (3,3), activation = 'relu', padding = 'same')(b4)
+        c5 = Conv2D(LAYER_SIZE, (3,3), activation = 'relu', padding = 'same')(b4)
         b5 = BatchNormalization()(c5)
 
         a5 = Add()([b5, a3])
 
-        b6 = Conv2D(256, (3,3), activation = 'relu', padding = 'same')(a5)
+        b6 = Conv2D(LAYER_SIZE, (3,3), activation = 'relu', padding = 'same')(a5)
         
         f1 = Flatten()(b6)
-        d1 = Dense(256, activation = 'relu')(f1)
+        d1 = Dense(LAYER_SIZE, activation = 'relu')(f1)
         d2 = Dense(1, activation = 'tanh')(d1)
 
         self.model = keras.models.Model(inputs = main_input, outputs = d2)
-        
-        #self.model = keras.models.Sequential()
-
-        #self.model.add(Conv2D(64, (3,3), activation = 'relu', padding = 'same',
-        #                      input_shape = (3,8,8)))
-        #self.model.add(BatchNormalization())
-        #self.model.add(Conv2D(64, (3,3), activation = 'relu', padding = 'same'))
-        #self.model.add(BatchNormalization())
-        #self.model.add(Conv2D(128, (3,3), activation = 'relu', padding = 'same'))
-        #self.model.add(BatchNormalization())
-        #self.model.add(Conv2D(128, (3,3), activation = 'relu', padding = 'same'))
-        #self.model.add(BatchNormalization())
-        #self.model.add(Flatten())
-        #self.model.add(Dense(256, activation = 'relu'))
-        #self.model.add(Dense(1, activation = 'tanh'))
 
         self.model.compile(Adam(self.learning_rate), "mse")
-
-        #self.model._make_predict_function()
 
 
     def add_to_history(self, state_array, reward):
@@ -191,12 +147,8 @@ class ReversiPlayer:
                                  current_reward])
             current_reward *= REWARD_DECAY
 
-        #print(history)
-
     def wipe_history(self):
         self.experience = []
-
-        print("WIPE!")
 
     def train_model(self, verbose):
         inputs = []
@@ -207,8 +159,6 @@ class ReversiPlayer:
             lesson = random.choice(history)
             inputs.append(lesson[0])
             answers.append(lesson[1])
-
-        #print(model_num)
 
         inputs = np.array(inputs)
         answers = np.array(answers)
@@ -251,18 +201,16 @@ class ReversiPlayer:
                 print("Random Move for player " + str(env.to_play))
             return random.choice(possible_moves)
         else:
-            board = reversiBoard(8)
+            board = OthelloBoard(8)
             board.board = observation
             value, move = decision_tree.alphabeta(board, self.depth, -math.inf,
                                                   math.inf, 1, self.index)
-#            print("%.15f" % value)
-#            print(move)#
-#            print("")
+
             if(move == None):
                 return (-1,-1)
             return move
 
-class RandomPlayer(ReversiPlayer):
+class RandomPlayer(OthelloPlayer):
     def __init__(self):
         pass
     
@@ -329,147 +277,3 @@ class BasicPlayer(RandomPlayer):
                 bestMove = move
         
         return bestMove
-
-class ReversiController:
-    def __init__(self, path, display_img, debugging, population_size,
-                 learning_rate = 0.0001, epsilon = 2, epsilon_increment = 0.001):
-        self.display_img = display_img
-        self.debugging = debugging
-        self.path = path
-
-        if(debugging):
-            epsilon = 20000
-
-        self.population = [ReversiPlayer(i, 3, self, learning_rate, epsilon,
-                                         epsilon_increment, debugging)
-                           for i in range(population_size)]
-
-        self.population.append(RandomPlayer())
-
-    def play_two_ai(self, index1, index2):
-        return self.play_two_ai_training(index1, index2, False)
-
-    def play_two_ai_training(self, index1, index2, training):
-        switch = 0
-
-        if(training):
-            switch = random.randint(0, 58)
-#            print("Switch: " + str(switch))
-
-        # Random Player Index
-        rpi = len(self.population) - 1
-        
-        move_player = [self.population[rpi], self.population[rpi]]
-        learn_player = [self.population[index1], self.population[index2]]
-
-        d = {1: 0, -1: 1}
-        e = {0: 1, 1: -1}
-
-        env = reversiBoard(BOARD_SIZE)
-        observation = env.reset()
-
-        # First array corresponds to the states faced by the first player
-        # Same with second
-        state_array = [[],[]]
-
-        for t in range(200):
-            
-            if(t == switch):
-                move_player = [self.population[index1], self.population[index2]]
-                
-            if(self.display_img):
-                env.render()
-            
-            if(self.debugging):
-                pass
-                #time.sleep(5)
-
-            # Chose a move and take it
-            move = move_player[t % 2].policy(observation, e[t % 2])
-            
-            observation, reward, done, info = env.step(move)
-
-            if(self.debugging):
-                print(env.to_play)
-                print("")
-                print("Move")
-                print(move)
-                print("")
-
-                print("Observation")
-                print(observation)
-                print("")
-
-                time.sleep(3)
-            
-            if(not done and t >= switch):
-                if(env.to_play == 1):
-                    state_array[0].append(observation)
-                elif(env.to_play == -1):
-                    state_array[1].append(reverse(observation))
-
-            # Check if done. We're only training once we finish the entire
-            # episode. Here, the model which makes the last move has number
-            # model_num, and the reward it has is reward
-
-            if done:
-                if(reward == 0):
-                    print("Draw")
-                    
-                print("Episode finished after {} timesteps".format(t+1)) 
-
-                if(self.debugging):
-                    print("Winner: " + str(reward))
-                #print("Winner: " + str(reward))
-
-
-                if(len(state_array[0]) == 0):
-                    pass
-
-                learn_player[0].add_to_history(state_array[0], reward)
-                learn_player[1].add_to_history(state_array[1], -reward)
-
-                return reward
-        return reward
-        
-    def main(self, total_episodes):
-        # For some reason, I need this ... Not sure why ...
-        K.get_session()
-        
-        #Number of training episodes
-        for i in range(total_episodes):
-            #One Round Robin Tournament
-            for j in range(len(self.population) - 1): #The minus 1 is there for the randomPlayer
-                for k in range(len(self.population) - 1):
-                    self.play_two_ai(j,k)
-#                    thread_array = []
-#                    for l in range(THREAD_NUM):
-#                        t = Thread(target = self.play_two_ai_training,
-#                                   args = (j,k, True))
-#                        t.start()
-#                        thread_array.append(t)
-#
-#                    for t in thread_array:
-#                        t.join()
-            #Everyone Trains
-            for j in range(len(self.population) - 1):
-                for k in range(1):#2*THREAD_NUM):
-                    self.population[j].train_model(self.debugging)
-
-            if(i % SAVE_FREQUENCY == 0):
-                print(i)
-                self.save([i])
-
-            if(i % WIPE_FREQUENCY == 0):
-                for j in range(len(self.population) - 1):
-                    self.population[j].wipe_history()
-        
-    def save(self, episode_numbers):
-        for j in range(len(self.population) - 1):
-            self.population[j].save(self.path + "Reversi_%d" %
-                                    (episode_numbers[j]))
-
-    def load(self, episode_numbers):
-        for j in range(len(self.population) - 1):
-            self.population[j].load(self.path + "Reversi_%d" %
-                                    (episode_numbers[j]))
