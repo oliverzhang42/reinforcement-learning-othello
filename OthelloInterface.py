@@ -7,7 +7,7 @@ FLAGS = flags.FLAGS
 
 flags.DEFINE_string("mode", None, "Mode, 't' for train, 'h' for play vs human, and 'm' for play vs machine")
 flags.DEFINE_string("path", None, "Path, specify the folder which you want to save/read weights.")
-flags.DEFINE_float("lr", 0.001, "Learning rate, only matters if you're training.")
+flags.DEFINE_float("lr", 0.000001, "Learning rate, only matters if you're training. Since the neural net is pretty deep, it has to be small.")
 flags.DEFINE_boolean("random", True, "Determines whether there will be randomness in your training.")
 flags.DEFINE_integer("save_frequency", 50, "After how many iterations do you want to save?")
 flags.DEFINE_list("load_weight", [-1], "The list of weights to load. If training or vs human\

@@ -7,14 +7,16 @@ WEIGHTS = [-1] #The list of weights to load. If training or vs human
                    #make the list one length. If play vs machine, you HAVE TO make it length 2.
 TOTAL_EPISODES = 10000 #What's the total number of episodes do you want to run? Only used if training
 
-
-
 from absl import app
 
 from OthelloController import OthelloController
 from OthelloAgainstAI import OthelloSession
 from OthelloArena import Arena
 
+import sys
+
+if PATH == None:
+    raise Exception("You need to set a path in OthelloScript before running it.")
 
 def main(argv):
     del argv # Unused.
