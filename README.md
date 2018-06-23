@@ -2,7 +2,7 @@
 
 This is a project on reinforcement learning. It employs Monte Carlo learning to tackle the game of Othello. Essentially, it plays games against itself and records those games. Then after each game, it sees which player won and uses that information to get better.
 
-In more technical terms, the model is doing state-value-approximation. Each state is a different board state and the approximator function is a six-layerd Convolutional Neural Network with resnet set up. When playing against a human or another AI, it also applies a three-layered Alpha-Beta search. 
+In more technical terms, the model is doing state-value-approximation. Each state is a different board state and the approximator function is a six-layered Convolutional Neural Network with resnet set up. When it's not training, it also applies a three-layered Alpha-Beta search. 
 
 ## Requirements
 

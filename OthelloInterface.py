@@ -17,7 +17,7 @@ flags.DEFINE_integer("total_episodes", 10000, "What's the total number of episod
 flags.mark_flag_as_required("mode")
 flags.mark_flag_as_required("path")
 
-from Controller import OthelloController
+from OthelloController import OthelloController
 from OthelloAgainstAI import OthelloSession
 from OthelloArena import Arena
 
