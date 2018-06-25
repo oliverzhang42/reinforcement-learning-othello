@@ -4,6 +4,8 @@ This is a project on reinforcement learning. It employs Monte Carlo learning to 
 
 In more technical terms, the model is doing state-value-approximation. Each state is a different board state and the approximator function is a six-layered Convolutional Neural Network with resnet set up. When it's not training, it also applies a three-layered Alpha-Beta search. 
 
+For those interested in the conceptual side of things, you can check out oliverzhang.net for a more in-depth view of the concepts behind this implementation. And if you're ready for a technical course on Reinforcement Leanring, I recommend David Silver's youtube lectures.
+
 ## Requirements
 
 The library keras is required. It can be installed at https://keras.io/#installation. The package absl was also used for the command line interface, but it isn't necessary as long as you only run the script, but if you want to install it go here: https://github.com/abseil/abseil-py.
